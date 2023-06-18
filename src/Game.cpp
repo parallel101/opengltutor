@@ -17,13 +17,16 @@ Game::~Game() = default;
 
 using ObjectId = std::uint32_t;
 using ComponentId = std::uint32_t;
-using StorageId = std::uint32_t;
-using EventId = std::uint32_t;
 
 struct Component;
 
 struct Object {
     std::map<ComponentId, std::unique_ptr<Component>> components;
+
+    Object &operator=(Object &&) = delete;
+};
+
+struct Event {
 };
 
 struct Scene {
@@ -34,12 +37,37 @@ struct Scene {
     ObjectId objIdTop = 0;
     ComponentId compIdTop = 0;
 
+    template <class Func>
+    void foreachComp(ComponentId compId, Func &&func) {
+        for (auto objId: compHasObjs.at(compId)) {
+            auto comp = objGetComp(objId, compId);
+            func(comp, objId);
+        }
+    }
+
+    template <class CompType, class Func>
+    void foreachComp(Func &&func) {
+        for (auto objId: compHasObjs.at(CompType::kId)) {
+            auto &comp = objGetComp<CompType>(objId, CompType::kId);
+            func(comp, objId);
+        }
+    }
+
     ObjectId addObj() {
         auto objId = objIdTop++;
         auto obj = std::make_unique<Object>();
-        if (!objects.try_emplace(objId, obj).second) [[unlikely]]
+        if (!objects.try_emplace(objId, std::move(obj)).second) [[unlikely]]
             throw std::invalid_argument("object id conflict");
         return objId;
+    }
+
+    void addPresetComp(ComponentId compId, std::unique_ptr<Component> (*factory)()) {
+        compIdTop = std::max(compIdTop, compId + 1);
+        auto comp = std::make_unique<Object>();
+        if (!componentFactories.try_emplace(compId, factory).second) [[unlikely]]
+            throw std::invalid_argument("component id conflict");
+        if (!compHasObjs.try_emplace(compId).second) [[unlikely]]
+            throw std::invalid_argument("component id conflict in lut");
     }
 
     ComponentId addComp(std::unique_ptr<Component> (*factory)()) {
@@ -47,138 +75,123 @@ struct Scene {
         auto comp = std::make_unique<Object>();
         if (!componentFactories.try_emplace(compId, factory).second) [[unlikely]]
             throw std::invalid_argument("component id conflict");
-        return objId;
+        if (!compHasObjs.try_emplace(compId).second) [[unlikely]]
+            throw std::invalid_argument("component id conflict in lut");
+        return compId;
     }
 
-    void objAddComp(ObjectId objId, ComponentId compId) {
-        auto comp = componentFactories.at(compId);
+    template <class T>
+    static std::unique_ptr<Component> _componentFactoryFor() {
+        return std::make_unique<T>();
+    }
+
+    template <class T>
+    void addPresetComp() {
+        addPresetComp(T::kId, _componentFactoryFor<T>);
+    }
+
+    template <class T>
+    ComponentId addComp() {
+        return addComp(_componentFactoryFor<T>);
+    }
+
+    Component *objAddComp(ObjectId objId, ComponentId compId) {
+        auto comp = componentFactories.at(compId)();
+        auto compPtr = comp.get();
         auto &obj = objects.at(objId);
         if (!obj->components.try_emplace(compId, std::move(comp)).second) [[unlikely]]
             throw std::invalid_argument("object component already exist");
-        compHasObjs.try_emplace(compId).first->second.insert(objId);
+        compHasObjs.at(compId).insert(objId);
+        return compPtr;
+    }
+
+    template <class T>
+    T &objAddComp(ObjectId objId) {
+        auto comp = componentFactories.at(T::kId)();
+        auto compPtr = comp.get();
+        auto &obj = objects.at(objId);
+        if (!obj->components.try_emplace(T::kId, std::move(comp)).second) [[unlikely]]
+            throw std::invalid_argument("object component already exist");
+        compHasObjs.at(T::kId).insert(objId);
+        return *static_cast<T *>(compPtr);
+    }
+
+    void objRemoveComp(ObjectId objId, ComponentId compId) {
+        auto &obj = objects.at(objId);
+        obj->components.erase(compId);
+        compHasObjs.erase(compId);
+    }
+
+    Component *objGetComp(ObjectId objId, ComponentId compId) {
+        auto &obj = objects.at(objId);
+        auto comp = obj->components.at(compId).get();
+        return comp;
+    }
+
+    template <class T>
+    T &objGetComp(ObjectId objId, ComponentId compId) {
+        return *static_cast<T *>(objGetComp(objId, compId));
     }
 };
 
 struct Component {
     virtual ~Component() = default;
+
+    Component &operator=(Component &&) = delete;
 };
 
-struct Object {
-    std::map<ComponentId, StorageId> compId2StoId;
+struct KinematicComponent : Component {
+    glm::vec3 pos{};
+    glm::vec3 vel{};
+
+    static constexpr ComponentId kId = __LINE__;
 };
 
-struct Component {
-    SparseVec<StorageId, ObjectId, std::uint32_t> objectIds;
-    std::set<EventId> eventIds;
-    BlobVec<StorageId> storage;
-    void (*callback)(Game::Self &self, Component &comp, EventId eventId);
+struct GravityComponent : Component {
+    void advance(Scene &scene, ObjectId objId, float dt) {
+        auto &store = scene.objGetComp<KinematicComponent>(objId, KinematicComponent::kId);
+        store.pos += store.vel * dt;
+        store.vel += gravity * dt;
+    }
+
+    glm::vec3 gravity{0.0f, -9.8f, 0.0f};
+
+    static constexpr ComponentId kId = __LINE__;
 };
 
-struct Event {
-    std::set<ComponentId> compIds;
+struct RenderParticleComponent : Component {
+    void render(Scene &scene, ObjectId objId) {
+        auto &store = scene.objGetComp<KinematicComponent>(objId, KinematicComponent::kId);
+        glVertex3fv(glm::value_ptr(store.pos));
+    }
+
+    static constexpr ComponentId kId = __LINE__;
 };
 
 struct Game::Self {
-    SparseVec<Object, ObjectId, std::uint32_t> objects;
-    SparseVec<Component, ComponentId, std::uint32_t> components;
-    SparseVec<Event, EventId, std::uint32_t> events;
+    Scene scene;
 
-    ComponentId cGravity;
-    ComponentId cRenderParticle;
-    ComponentId cKinematic;
-
-    struct GravityStorage {
-        void operator()(Self &self, ObjectId objId, EventId eventId) {
-            auto &store = self.objGetComp<KinematicStorage>(objId, self.cKinematic);
-            store.pos += store.vel;
-        }
-    };
-
-    struct RenderParticleStorage {
-        void operator()(Self &self, ObjectId objId, EventId eventId) {
-            auto &store = self.objGetComp<KinematicStorage>(objId, self.cKinematic);
-            glVertex3fv(glm::value_ptr(store.pos));
-        }
-    };
-
-    struct KinematicStorage {
-        glm::vec3 pos{};
-        glm::vec3 vel{};
-
-        void operator()(Self &self, ObjectId objId, EventId eventId) {
-        }
-    };
-
-    Self(Self &&) = delete;
+    Self &operator=(Self &&) = delete;
 
     Self() {
-        cGravity = addComp<GravityStorage>();
-        cRenderParticle = addComp<RenderParticleStorage>();
-        cKinematic = addComp<KinematicStorage>();
-
-        auto obj0 = addObj();
-        objAddComp(obj0, cRenderParticle);
-        objAddComp(obj0, cKinematic);
-        /* objAddComp(obj0, cGravity); */
-    }
-
-    template <class Storage>
-    ComponentId addComp() {
-        auto [compId, comp] = components.emplace_back();
-        comp->storage.initialize_type<Storage>();
-        comp->callback = [] (Self &self, Component &comp, EventId eventId) {
-            comp.objectIds.foreach([&] (StorageId stoId, ObjectId objId) {
-                comp.storage.get<Storage>(stoId)(self, objId, eventId);
-            });
-        };
-        return compId;
-    }
-
-    ObjectId addObj() {
-        auto objId = objects.emplace_back().first;
-        return objId;
-    }
-
-    void objAddComp(ObjectId objId, ComponentId compId) {
-        auto &comp = components[compId];
-        auto &obj = objects[objId];
-        auto stoId = comp.objectIds.emplace_back(objId).first;
-        comp.storage.emplace_back();
-        obj.compId2StoId.try_emplace(objId, stoId);
-    }
-
-    template <class Storage>
-    Storage &objGetComp(ObjectId objId, ComponentId compId) {
-        auto &comp = components[compId];
-        auto &obj = objects[objId];
-        auto it = obj.compId2StoId.find(compId);
-        assert(it != obj.compId2StoId.end());
-        auto stoId = it->second;
-        return comp.storage.get<Storage>(stoId);
-    }
-
-    void objRemoveComp(ObjectId objId, ComponentId compId) {
-        auto &comp = components[compId];
-        auto &obj = objects[objId];
-        auto it = obj.compId2StoId.find(compId);
-        assert(it != obj.compId2StoId.end());
-        auto stoId = it->second;
-        comp.objectIds.erase(stoId);
-        obj.compId2StoId.erase(it);
-    }
-
-    void callComponent(ComponentId compId, EventId eventId) {
-        auto &comp = components[compId];
-        comp.callback(*this, comp, eventId);
+        scene.addPresetComp<KinematicComponent>();
+        scene.addPresetComp<GravityComponent>();
+        scene.addPresetComp<RenderParticleComponent>();
+        auto obj = scene.addObj();
+        scene.objAddComp<KinematicComponent>(obj);
+        scene.objAddComp<RenderParticleComponent>(obj);
+        scene.objAddComp<GravityComponent>(obj);
     }
 
     void tick(double dt) {
-        callComponent(cGravity, 0);
         glBegin(GL_POINTS);
-        callComponent(cRenderParticle, 0);
+        scene.foreachComp<RenderParticleComponent>([&] (auto &comp, auto objId) {
+            comp.render(scene, objId);
+        });
+        scene.foreachComp<GravityComponent>([&] (auto &comp, auto objId) {
+            comp.advance(scene, objId, (float)dt);
+        });
         CHECK_GL(glEnd());
-        /* components.foreach([&] (ComponentId compId, Component &comp) { */
-        /* }); */
     }
 };
 

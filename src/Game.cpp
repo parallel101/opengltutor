@@ -48,7 +48,7 @@ struct Scene {
     template <class CompType, class Func>
     void foreachComp(Func &&func) {
         for (auto objId: compHasObjs.at(CompType::kId)) {
-            auto &comp = objGetComp<CompType>(objId, CompType::kId);
+            auto &comp = objGetComp<CompType>(objId);
             func(comp, objId);
         }
     }
@@ -61,7 +61,7 @@ struct Scene {
         return objId;
     }
 
-    void addPresetComp(ComponentId compId, std::unique_ptr<Component> (*factory)()) {
+    void addComp(ComponentId compId, std::unique_ptr<Component> (*factory)()) {
         compIdTop = std::max(compIdTop, compId + 1);
         auto comp = std::make_unique<Object>();
         if (!componentFactories.try_emplace(compId, factory).second) [[unlikely]]
@@ -86,13 +86,8 @@ struct Scene {
     }
 
     template <class T>
-    void addPresetComp() {
-        addPresetComp(T::kId, _componentFactoryFor<T>);
-    }
-
-    template <class T>
-    ComponentId addComp() {
-        return addComp(_componentFactoryFor<T>);
+    void addComp() {
+        addComp(T::kId, _componentFactoryFor<T>);
     }
 
     Component *objAddComp(ObjectId objId, ComponentId compId) {
@@ -129,8 +124,8 @@ struct Scene {
     }
 
     template <class T>
-    T &objGetComp(ObjectId objId, ComponentId compId) {
-        return *static_cast<T *>(objGetComp(objId, compId));
+    T &objGetComp(ObjectId objId) {
+        return *static_cast<T *>(objGetComp(objId, T::kId));
     }
 };
 
@@ -147,9 +142,27 @@ struct KinematicComponent : Component {
     static constexpr ComponentId kId = __LINE__;
 };
 
+struct BounceInBoxComponent : Component {
+    void advance(Scene &scene, ObjectId objId, float dt) {
+        auto &store = scene.objGetComp<KinematicComponent>(objId);
+        for (std::size_t i = 0; i < 3; i++) {
+            if (store.pos[i] <= -1.0f && store.vel[i] < 0.0f) {
+                store.vel[i] = -store.vel[i] * (1.0f - decay_rate);
+            }
+            if (store.pos[i] >= 1.0f && store.vel[i] > 0.0f) {
+                store.vel[i] = -store.vel[i] * (1.0f - decay_rate);
+            }
+        }
+    }
+
+    float decay_rate = 0.3f;
+
+    static constexpr ComponentId kId = __LINE__;
+};
+
 struct GravityComponent : Component {
     void advance(Scene &scene, ObjectId objId, float dt) {
-        auto &store = scene.objGetComp<KinematicComponent>(objId, KinematicComponent::kId);
+        auto &store = scene.objGetComp<KinematicComponent>(objId);
         store.pos += store.vel * dt;
         store.vel += gravity * dt;
     }
@@ -159,10 +172,12 @@ struct GravityComponent : Component {
     static constexpr ComponentId kId = __LINE__;
 };
 
-struct RenderParticleComponent : Component {
+struct RenderComponent : Component {
     void render(Scene &scene, ObjectId objId) {
-        auto &store = scene.objGetComp<KinematicComponent>(objId, KinematicComponent::kId);
+        auto &store = scene.objGetComp<KinematicComponent>(objId);
+        glBegin(GL_POINTS);
         glVertex3fv(glm::value_ptr(store.pos));
+        CHECK_GL(glEnd());
     }
 
     static constexpr ComponentId kId = __LINE__;
@@ -174,24 +189,30 @@ struct Game::Self {
     Self &operator=(Self &&) = delete;
 
     Self() {
-        scene.addPresetComp<KinematicComponent>();
-        scene.addPresetComp<GravityComponent>();
-        scene.addPresetComp<RenderParticleComponent>();
+        scene.addComp<KinematicComponent>();
+        scene.addComp<GravityComponent>();
+        scene.addComp<RenderComponent>();
+        scene.addComp<BounceInBoxComponent>();
+
         auto obj = scene.addObj();
         scene.objAddComp<KinematicComponent>(obj);
-        scene.objAddComp<RenderParticleComponent>(obj);
+        scene.objAddComp<RenderComponent>(obj);
         scene.objAddComp<GravityComponent>(obj);
+        scene.objAddComp<BounceInBoxComponent>(obj);
+
+        scene.objGetComp<KinematicComponent>(ObjectId(0)).vel = {0.2f, 0, 0};
     }
 
     void tick(double dt) {
-        glBegin(GL_POINTS);
-        scene.foreachComp<RenderParticleComponent>([&] (auto &comp, auto objId) {
+        scene.foreachComp<RenderComponent>([&] (auto &comp, auto objId) {
             comp.render(scene, objId);
         });
         scene.foreachComp<GravityComponent>([&] (auto &comp, auto objId) {
             comp.advance(scene, objId, (float)dt);
         });
-        CHECK_GL(glEnd());
+        scene.foreachComp<BounceInBoxComponent>([&] (auto &comp, auto objId) {
+            comp.advance(scene, objId, (float)dt);
+        });
     }
 };
 

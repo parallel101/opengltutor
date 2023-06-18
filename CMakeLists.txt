@@ -7,7 +7,10 @@ set(CMAKE_CXX_STANDARD 20)
 
 project(main LANGUAGES CXX)
 
-add_executable(main main.cpp)
+file(GLOB_RECURSE sources CONFIGURE_DEPENDS src/*.cpp)
+file(GLOB_RECURSE headers CONFIGURE_DEPENDS include/*.h include/*.hpp)
+add_executable(main ${sources} ${headers})
+target_include_directories(main PUBLIC include)
 
 add_subdirectory(glm)
 target_link_libraries(main PUBLIC glm)

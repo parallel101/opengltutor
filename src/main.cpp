@@ -1,30 +1,38 @@
-#include <cstdio>
-#include <GL/gl.h>
 #include <glm/glm.hpp>
 #include <glm/ext.hpp>
 #include "check_gl.hpp"
 #include <GLFW/glfw3.h>
-#include "print.hpp"
 #include "Game.hpp"
+#include <stdexcept>
+#include <string>
+#include <cstdio>
 
 int main() {
     if (!glfwInit()) {
-        return -1;
+        throw std::runtime_error("failed to initialize GLFW");
     }
 #ifdef FULLSCRN
     GLFWmonitor *monitor = glfwGetPrimaryMonitor();
     const GLFWvidmode *mode = glfwGetVideoMode(monitor);
     GLFWwindow *window = glfwCreateWindow(mode->width, mode->height, "Example", NULL, NULL);
     glfwSetWindowMonitor(window, monitor, 0, 0, mode->width, mode->height, mode->refreshRate);
-    aspect = (float)mode->width / (float)mode->height;
 #else
     GLFWwindow *window = glfwCreateWindow(640, 640, "Example", NULL, NULL);
 #endif
     if (!window) {
         glfwTerminate();
-        return -1;
+        const char *errmsg;
+        glfwGetError(&errmsg);
+        throw std::runtime_error("GLFW failed to create window: "
+                                 + std::string(errmsg));
     }
     glfwMakeContextCurrent(window);
+
+    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
+        glfwTerminate();
+        throw std::runtime_error("GLAD failed to load GL functions");
+    }
+    printf("OpenGL version: %s\n", glGetString(GL_VERSION));
 
     {
         Game game;

@@ -1,7 +1,7 @@
 #pragma once
 
 #include <iostream>
-#include <GL/gl.h>
+#include <glad/glad.h>
 
 static const char *opengl_errno_name(int err) {
     switch (err) {

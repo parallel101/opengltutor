@@ -12,7 +12,7 @@ struct KinematicComponent : Component {
     glm::vec3 pos{};
     glm::vec3 vel{};
 
-    static constexpr ComponentId kId = ComponentId(__LINE__);
+    static constexpr ComponentId id() { return ComponentId(__LINE__); }
 };
 
 struct BounceInBoxComponent : Component {
@@ -30,7 +30,7 @@ struct BounceInBoxComponent : Component {
 
     float decay_rate = 0.3f;
 
-    static constexpr ComponentId kId = ComponentId(__LINE__);
+    static constexpr ComponentId id() { return ComponentId(__LINE__); }
 };
 
 struct GravityComponent : Component {
@@ -42,7 +42,7 @@ struct GravityComponent : Component {
 
     glm::vec3 gravity{0.0f, -9.8f, 0.0f};
 
-    static constexpr ComponentId kId = ComponentId(__LINE__);
+    static constexpr ComponentId id() { return ComponentId(__LINE__); }
 };
 
 struct RenderStrategy {
@@ -59,7 +59,7 @@ struct RenderComponent : Component {
 
     std::unique_ptr<RenderStrategy> strategy;
 
-    static constexpr ComponentId kId = ComponentId(__LINE__);
+    static constexpr ComponentId id() { return ComponentId(__LINE__); }
 };
 
 struct PointRenderStrategy : RenderStrategy {

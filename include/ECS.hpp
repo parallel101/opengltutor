@@ -38,7 +38,7 @@ struct Scene {
 
     template <class CompType, class Func>
     void foreachComp(Func &&func) {
-        for (auto objId: compHasObjs.at(CompType::kId)) {
+        for (auto objId: compHasObjs.at(CompType::id())) {
             auto &comp = objGetComp<CompType>(objId);
             func(comp, objId);
         }
@@ -80,7 +80,7 @@ struct Scene {
 
     template <class T>
     void addComp() {
-        addComp(T::kId, _componentFactoryFor<T>);
+        addComp(T::id(), _componentFactoryFor<T>);
     }
 
     Component *objAddComp(ObjectId objId, ComponentId compId) {
@@ -95,12 +95,12 @@ struct Scene {
 
     template <class T>
     T &objAddComp(ObjectId objId) {
-        auto comp = componentFactories.at(T::kId)();
+        auto comp = componentFactories.at(T::id())();
         auto compPtr = comp.get();
         auto &obj = objects.at(objId);
-        if (!obj->components.emplace(T::kId, std::move(comp)).second) [[unlikely]]
+        if (!obj->components.emplace(T::id(), std::move(comp)).second) [[unlikely]]
             throw std::invalid_argument("object component already exist");
-        compHasObjs.at(T::kId).insert(objId);
+        compHasObjs.at(T::id()).insert(objId);
         return *static_cast<T *>(compPtr);
     }
 
@@ -118,7 +118,7 @@ struct Scene {
 
     template <class T>
     T &objGetComp(ObjectId objId) {
-        return *static_cast<T *>(objGetComp(objId, T::kId));
+        return *static_cast<T *>(objGetComp(objId, T::id()));
     }
 };
 

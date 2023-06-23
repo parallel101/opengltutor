@@ -1,2 +1,9 @@
+# linux files
 .cache/
 build/
+# wendous files
+.vs/
+out/
+CMakeSettings.json
+.vscode/
+.~*

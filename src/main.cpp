@@ -1,4 +1,4 @@
-#include <glm/glm.hpp>
+﻿#include <glm/glm.hpp>
 #include <glm/ext.hpp>
 #include "check_gl.hpp" // includes glad/glad.h
 #include <GLFW/glfw3.h> // must be placed behind glad/glad.h
@@ -20,6 +20,8 @@ static void render() {
 }
 
 int main() {
+    printf("小彭老师我爱你\n");
+
     if (!glfwInit()) {
         const char *errmsg;
         glfwGetError(&errmsg);

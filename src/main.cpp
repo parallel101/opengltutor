@@ -7,36 +7,35 @@
 #include <cstring>
 #include <cstdlib>
 
-static void render() {
+constexpr float pi = 3.14159265358979f;
+
+void drawRing(float center_x, float center_y, float inner_radius, float outer_radius, float r, float g, float b, float begin_angle=0, float end_angle=1, int n = 100)
+{
     glBegin(GL_TRIANGLES);
-    glColor3f(1.0f, 0.0f, 0.0f);
-    glVertex3f(0.0f, 0.5f, 0.0f);
-    glColor3f(0.0f, 1.0f, 0.0f);
-    glVertex3f(-0.5f, -0.5f, 0.0f);
-    glColor3f(0.0f, 0.0f, 1.0f);
-    glVertex3f(0.5f, -0.5f, 0.0f);
+    
+    for (int i(0); i < n; ++i) {
+        float angle_interval = (end_angle - begin_angle) / n * 2 * pi;
+        float begin_radian = begin_angle * 2 * pi;
+        glColor3f(r, g, b);
+
+        glVertex3f(center_x + outer_radius * cosf(begin_radian + angle_interval * i), center_y + outer_radius * sinf(begin_radian + angle_interval * i), 0.0f);
+        glVertex3f(center_x + inner_radius * cosf(begin_radian + angle_interval * i), center_y + inner_radius * sinf(begin_radian + angle_interval * i), 0.0f);
+        glVertex3f(center_x + outer_radius * cosf(begin_radian + angle_interval * (i + 1)), center_y + outer_radius * sinf(begin_radian + angle_interval * (i + 1)), 0.0f);
+
+        glVertex3f(center_x + inner_radius * cosf(begin_radian + angle_interval * i), center_y + inner_radius * sinf(begin_radian + angle_interval * i), 0.0f);
+        glVertex3f(center_x + outer_radius * cosf(begin_radian + angle_interval * (i + 1)), center_y + outer_radius * sinf(begin_radian + angle_interval * (i + 1)), 0.0f);
+        glVertex3f(center_x + inner_radius * cosf(begin_radian + angle_interval * (i + 1)), center_y + inner_radius * sinf(begin_radian + angle_interval * (i + 1)), 0.0f);
+    }
     CHECK_GL(glEnd());
-    /* glBegin(GL_TRIANGLES); */
-    /* constexpr int n = 100; */
-    /* constexpr float pi = 3.1415926535897f; */
-    /* float radius = 0.5f; */
-    /* float inner_radius = 0.25f; */
-    /* static int x = 0; */
-    /* x++; */
-    /* if (x > n) */
-    /*     x -= n; */
-    /* for (int i = 0; i < x; i++) { */
-    /*     float angle = i / (float)n * pi * 2; */
-    /*     float angle_next = (i + 1) / (float)n * pi * 2; */
-    /*     glVertex3f(0.0f, 0.0f, 0.0f); */
-    /*     glVertex3f(radius * sinf(angle), radius * cosf(angle), 0.0f); */
-    /*     glVertex3f(radius * sinf(angle_next), radius * cosf(angle_next), 0.0f); */
-        /* glVertex3f(inner_radius * sinf(angle), inner_radius * cosf(angle), 0.0f); */
-        /* glVertex3f(inner_radius * sinf(angle_next), inner_radius * cosf(angle_next), 0.0f); */
-        /* glVertex3f(inner_radius * sinf(angle), inner_radius * cosf(angle), 0.0f); */
-        /* glVertex3f(radius * sinf(angle_next), radius * cosf(angle_next), 0.0f); */
-    /* } */
-    /* CHECK_GL(glEnd()); */
+}
+
+static void render() {
+    float center_origin_distance = 0.5f;
+    float inner_radius = 0.15f;
+    float outer_radius = 0.4f;
+    drawRing(center_origin_distance * cosf(3 / 12.0 * 2 * pi), center_origin_distance * sinf(3 / 12.0 * 2 * pi), inner_radius, outer_radius, 1.0f, 0.0f, 0.0f, 5/6.0f, 10/6.0f);
+    drawRing(center_origin_distance * cosf(7 / 12.0 * 2 * pi), center_origin_distance * sinf(7 / 12.0 * 2 * pi), inner_radius, outer_radius, 0.0f, 1.0f, 0.0f, 1/6.0f, 6/6.0f);
+    drawRing(center_origin_distance * cosf(11 / 12.0 * 2 * pi), center_origin_distance * sinf(11 / 12.0 * 2 * pi), inner_radius, outer_radius, 0.0f, 0.0f, 1.0f, 2/6.0f, 7/6.0f);
 }
 
 int main() {

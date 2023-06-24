@@ -2,7 +2,7 @@
 
 零基础入门计算机图形学必不可少的在线网络公开课，手把手教您现代 OpenGL 的点点滴滴，构建爆款游戏引擎。
 
-本仓库包含实验源码和 PPT 课件。
+本仓库仅仅包含实验源码，课件下载请前往：https://github.com/parallel101/openglslides
 
 国内镜像下载：https://gitee.com/archibate/opengltutor
 

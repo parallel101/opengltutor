@@ -7,15 +7,41 @@
 #include <cstring>
 #include <cstdlib>
 
+
+void drawRingCircle(float centerx, float centery, float z)
+{
+    constexpr int n = 100;
+    constexpr float pi = 3.1415926535897f;
+    float radius = 0.2f;
+    float inner_radius = 0.1f;
+    //static int x = 0;
+    //x++;
+    //if (x > n)
+    //    x -= n;
+    for (int i = 0; i < n; i++) {
+
+        float angle = i / (float)n * pi * 2;
+        float angle_next = (i + 1) / (float)n * pi * 2;
+        //glVertex3f(0.0f, 0.0f, 0.0f);
+        glVertex3f(centerx + radius * sinf(angle), centery + radius * cosf(angle), z);
+        glVertex3f(centerx + radius * sinf(angle_next), centery + radius * cosf(angle_next), z);
+        glVertex3f(centerx + inner_radius * sinf(angle), centery + inner_radius * cosf(angle), z);
+
+        glVertex3f(centerx +inner_radius * sinf(angle_next), centery + inner_radius * cosf(angle_next), z);
+        glVertex3f(centerx +inner_radius * sinf(angle), centery + inner_radius * cosf(angle), z);
+        glVertex3f(centerx +radius * sinf(angle_next), centery + radius * cosf(angle_next), z);
+    }
+}
+
 static void render() {
-    glBegin(GL_TRIANGLES);
-    glColor3f(1.0f, 0.0f, 0.0f);
-    glVertex3f(0.0f, 0.5f, 0.0f);
-    glColor3f(0.0f, 1.0f, 0.0f);
-    glVertex3f(-0.5f, -0.5f, 0.0f);
-    glColor3f(0.0f, 0.0f, 1.0f);
-    glVertex3f(0.5f, -0.5f, 0.0f);
-    CHECK_GL(glEnd());
+    //glBegin(GL_TRIANGLES);
+    //glColor3f(1.0f, 0.0f, 0.0f);
+    //glVertex3f(0.0f, 0.5f, 0.0f);
+    //glColor3f(0.0f, 1.0f, 0.0f);
+    //glVertex3f(-0.5f, -0.5f, 0.0f);
+    //glColor3f(0.0f, 0.0f, 1.0f);
+    //glVertex3f(0.5f, -0.5f, 0.0f);
+    //CHECK_GL(glEnd());
     /* glBegin(GL_TRIANGLES); */
     /* constexpr int n = 100; */
     /* constexpr float pi = 3.1415926535897f; */
@@ -37,6 +63,47 @@ static void render() {
         /* glVertex3f(radius * sinf(angle_next), radius * cosf(angle_next), 0.0f); */
     /* } */
     /* CHECK_GL(glEnd()); */
+
+    float lengthSide = 0.46f;
+    float z = 0.0f;
+
+    //1 等边三角形
+    float x11 = 0.0f;
+    float y11 = lengthSide / 2 * 1.73f;
+    float x12 = -lengthSide / 2;
+    float y12 = 0.0f;
+    float x13 = lengthSide / 2;
+    float y13 = 0.0f;
+    float z1 = 0.0f; 
+
+    //2 等边三角形 缩小一半
+    float x21 = lengthSide / 4;
+    float y21 = y11 / 2;
+    float x22 = lengthSide - lengthSide / 4;
+    float y22 = lengthSide / 2 * 1.73f / 2;
+    float x23 = x13;
+    float y23 = y13;
+    float z2 =  0.0f;
+
+    glBegin(GL_TRIANGLES);
+
+
+    glColor3f(1.0f, 0.0f, 0.0f);
+    drawRingCircle(x11, y11, z);
+    glColor3f(0.0f, 1.0f, 0.0f);
+    drawRingCircle(x12, y12, z);
+    glColor3f(0.0f, 0.0f, 0.0f);
+    glVertex3f(x11, y11, z1);
+    glVertex3f(x12, y12, z1);
+    glVertex3f(x13, y13, z1);
+    glColor3f(0.0f, 0.0f, 1.0f);
+    drawRingCircle(x13, y13, 0.0f);
+    glColor3f(0.0f, 0.0f, 0.0f);
+    glVertex3f(x21, y21, z2);
+    glVertex3f(x22, y22, z2);
+    glVertex3f(x23, y23, z2);
+
+    CHECK_GL(glEnd());
 }
 
 int main() {
@@ -99,10 +166,10 @@ int main() {
     }
     std::cerr << "OpenGL version: " << glGetString(GL_VERSION) << '\n';
 
-    CHECK_GL(glEnable(GL_POINT_SMOOTH));
-    CHECK_GL(glEnable(GL_BLEND));
+    CHECK_GL(glEnable(GL_LINE_SMOOTH));
+    CHECK_GL(glEnable(GL_BLEND)); 
     CHECK_GL(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
-    CHECK_GL(glPointSize(64.0f));
+    //CHECK_GL(glPointSize(64.0f));
 
     // start main game loop
     while (!glfwWindowShouldClose(window)) {

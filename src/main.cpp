@@ -9,12 +9,61 @@
 
 static void render() {
     glBegin(GL_TRIANGLES);
-    glColor3f(1.0f, 0.0f, 0.0f);
-    glVertex3f(0.0f, 0.5f, 0.0f);
-    glColor3f(0.0f, 1.0f, 0.0f);
-    glVertex3f(-0.5f, -0.5f, 0.0f);
-    glColor3f(0.0f, 0.0f, 1.0f);
-    glVertex3f(0.5f, -0.5f, 0.0f);
+
+    constexpr int n = 100;
+    constexpr float pi = 3.1415926535897f;
+    constexpr float sqrt_3 = 1.73205f;
+
+    float side_length = 0.5f;
+
+    // the porpotion is measured with a real ruler
+    float radius = side_length * 1.4f / 3.1f;
+    float inner_radius = side_length * 0.5f / 3.1f;
+    
+    // coordinate of the three center: the upper one, the left-bottom one and the right-bottom one
+    float coordinate[3][3] = {
+        {0.0f, side_length / sqrt_3, 0.0f},
+        {-side_length / 2.0f, -side_length / (2.0f * sqrt_3), 0.0f},
+        {side_length / 2.0f, -side_length / (2.0f * sqrt_3), 0.0f}
+    };
+
+    // color of three circle: the upper one, the left-bottom one and the right-bottom one 
+    float color[3][3] = {
+        {1.0f, 0.0f, 0.0f},
+        {0.0f, 1.0f, 0.0f},
+        {0.0f, 0.0f, 1.0f}
+    };
+
+    // the angle between the starting edge of each incomplete circle and the positive half of y-axis:
+    // the upper circle, the left-bottom circle and the right-bottom circle
+    float theta[3] = {
+        -5.0f * pi /6.0f, -3.0f * pi / 2.0f, -11.0f * pi / 6.0f
+    };
+
+    for (int i = 0; i < 3; i++)
+    {
+        glColor3f(color[i][0], color[i][1], color[i][2]);
+        for (int j = 0; j < 5 * n / 6; j++)
+        {
+                float angle = theta[i] + (j / (float)n * 2 * pi);
+                float angle_next = theta[i] + ((j + 1) / (float)n * 2 * pi);
+
+                glVertex3f(coordinate[i][0] + inner_radius * sinf(angle), coordinate[i][1] + inner_radius * cosf(angle), coordinate[i][2]);
+                glVertex3f(coordinate[i][0] + radius * sinf(angle), coordinate[i][1] + radius * cosf(angle), coordinate[i][2]);
+                glVertex3f(coordinate[i][0] + inner_radius * sinf(angle_next), coordinate[i][1] + inner_radius * cosf(angle_next), coordinate[i][2]);
+
+                glVertex3f(coordinate[i][0] + radius * sinf(angle), coordinate[i][1] + radius * cosf(angle), coordinate[i][2]);
+                glVertex3f(coordinate[i][0] + inner_radius * sinf(angle_next), coordinate[i][1] + inner_radius * cosf(angle_next), coordinate[i][2]);
+                glVertex3f(coordinate[i][0] + radius * sinf(angle_next), coordinate[i][1] + radius * cosf(angle_next), coordinate[i][2]);
+        }
+    }
+   
+    //glColor3f(1.0f, 0.0f, 0.0f);
+    //glVertex3f(0.0f, 0.5f, 0.0f);
+    //glColor3f(0.0f, 1.0f, 0.0f);
+    //glVertex3f(-0.5f, -0.5f, 0.0f);
+    //glColor3f(0.0f, 0.0f, 1.0f);
+    //glVertex3f(0.5f, -0.5f, 0.0f);
     CHECK_GL(glEnd());
     /* glBegin(GL_TRIANGLES); */
     /* constexpr int n = 100; */

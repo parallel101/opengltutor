@@ -6,37 +6,77 @@
 #include <iostream>
 #include <cstring>
 #include <cstdlib>
+#include <fstream>
+#include <sstream>
+#include <vector>
+
+static std::vector<glm::vec3> vertices;
+static std::vector<glm::uvec3> faces;
+
+static void load_obj(std::string path) {
+    std::ifstream file(path);
+    if (!file.is_open()) {
+        std::cerr << "Failed to open file: " << path << '\n';
+        return;
+    }
+
+    std::string line;
+    while (std::getline(file, line)) {
+        if (line.substr(0, 2) == "v ") {
+            std::istringstream s(line.substr(2));
+            glm::vec3 vertex;
+            s >> vertex.x >> vertex.y >> vertex.z;
+            vertices.push_back(vertex);
+        } else if (line.substr(0, 2) == "f ") {
+            std::istringstream s(line.substr(2));
+            std::string splitted;
+            std::vector<unsigned int> indices;
+            while (std::getline(s, splitted, ' ')) {
+                unsigned int index;
+                std::istringstream(splitted) >> index;
+                indices.push_back(index - 1);
+            }
+            for (size_t i = 2; i < indices.size(); i++) {
+                glm::uvec3 face = {indices[0], indices[i - 1], indices[i]};
+                faces.push_back(face);
+            }
+        }
+    }
+
+    file.close();
+    std::cout << "Loaded " << vertices.size() << " vertices and " << faces.size() << " faces.\n";
+}
+
+static glm::vec3 colorAt(glm::vec3 const &pos) {
+    return (pos + 1.0f) / 2.0f;
+}
+
+static void draw_obj() {
+    glBegin(GL_TRIANGLES);
+
+    for (auto const &face : faces) {
+        auto const &a = vertices.at(face.x);
+        auto const &b = vertices.at(face.y);
+        auto const &c = vertices.at(face.z);
+
+        glColor3fv(glm::value_ptr(colorAt(a)));
+        glVertex3fv(glm::value_ptr(a));
+        glColor3fv(glm::value_ptr(colorAt(b)));
+        glVertex3fv(glm::value_ptr(b));
+        glColor3fv(glm::value_ptr(colorAt(c)));
+        glVertex3fv(glm::value_ptr(c));
+    }
+
+    CHECK_GL(glEnd());
+}
+
+static void initialize() {
+    load_obj("/home/bate/Codes/zeno_assets/assets/monkey.obj");
+    CHECK_GL(glEnable(GL_DEPTH_TEST));
+}
 
 static void render() {
-    glBegin(GL_TRIANGLES);
-    glColor3f(1.0f, 0.0f, 0.0f);
-    glVertex3f(0.0f, 0.5f, 0.0f);
-    glColor3f(0.0f, 1.0f, 0.0f);
-    glVertex3f(-0.5f, -0.5f, 0.0f);
-    glColor3f(0.0f, 0.0f, 1.0f);
-    glVertex3f(0.5f, -0.5f, 0.0f);
-    CHECK_GL(glEnd());
-    /* glBegin(GL_TRIANGLES); */
-    /* constexpr int n = 100; */
-    /* constexpr float pi = 3.1415926535897f; */
-    /* float radius = 0.5f; */
-    /* float inner_radius = 0.25f; */
-    /* static int x = 0; */
-    /* x++; */
-    /* if (x > n) */
-    /*     x -= n; */
-    /* for (int i = 0; i < x; i++) { */
-    /*     float angle = i / (float)n * pi * 2; */
-    /*     float angle_next = (i + 1) / (float)n * pi * 2; */
-    /*     glVertex3f(0.0f, 0.0f, 0.0f); */
-    /*     glVertex3f(radius * sinf(angle), radius * cosf(angle), 0.0f); */
-    /*     glVertex3f(radius * sinf(angle_next), radius * cosf(angle_next), 0.0f); */
-        /* glVertex3f(inner_radius * sinf(angle), inner_radius * cosf(angle), 0.0f); */
-        /* glVertex3f(inner_radius * sinf(angle_next), inner_radius * cosf(angle_next), 0.0f); */
-        /* glVertex3f(inner_radius * sinf(angle), inner_radius * cosf(angle), 0.0f); */
-        /* glVertex3f(radius * sinf(angle_next), radius * cosf(angle_next), 0.0f); */
-    /* } */
-    /* CHECK_GL(glEnd()); */
+    draw_obj();
 }
 
 int main() {
@@ -99,15 +139,11 @@ int main() {
     }
     std::cerr << "OpenGL version: " << glGetString(GL_VERSION) << '\n';
 
-    CHECK_GL(glEnable(GL_POINT_SMOOTH));
-    CHECK_GL(glEnable(GL_BLEND));
-    CHECK_GL(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
-    CHECK_GL(glPointSize(64.0f));
-
+    initialize();
     // start main game loop
     while (!glfwWindowShouldClose(window)) {
         // render graphics
-        CHECK_GL(glClear(GL_COLOR_BUFFER_BIT));
+        CHECK_GL(glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT));
         render();
         // refresh screen
         glfwSwapBuffers(window);

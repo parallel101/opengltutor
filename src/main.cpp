@@ -16,25 +16,26 @@ static void render() {
 
     float side_length = 0.5f;
 
-    // measured with a real ruler
+    // the porpotion is measured with a real ruler
     float radius = side_length * 1.4f / 3.1f;
     float inner_radius = side_length * 0.5f / 3.1f;
     
-    // coordinate of the three center
+    // coordinate of the three center: the upper one, the left-bottom one and the right-bottom one
     float coordinate[3][3] = {
         {0.0f, side_length / sqrt_3, 0.0f},
         {-side_length / 2.0f, -side_length / (2.0f * sqrt_3), 0.0f},
         {side_length / 2.0f, -side_length / (2.0f * sqrt_3), 0.0f}
     };
 
-    // color of three circle
+    // color of three circle: the upper one, the left-bottom one and the right-bottom one 
     float color[3][3] = {
         {1.0f, 0.0f, 0.0f},
         {0.0f, 1.0f, 0.0f},
         {0.0f, 0.0f, 1.0f}
     };
 
-    // the angle between the starting edge of each incomplete circle and the positive half of y-axis 
+    // the angle between the starting edge of each incomplete circle and the positive half of y-axis:
+    // the upper circle, the left-bottom circle and the right-bottom circle
     float theta[3] = {
         -5.0f * pi /6.0f, -3.0f * pi / 2.0f, -11.0f * pi / 6.0f
     };

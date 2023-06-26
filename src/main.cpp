@@ -8,6 +8,7 @@
 #include <cstdlib>
 
 static void render() {
+    /*
     glBegin(GL_TRIANGLES);
     glColor3f(1.0f, 0.0f, 0.0f);
     glVertex3f(0.0f, 0.5f, 0.0f);
@@ -16,27 +17,62 @@ static void render() {
     glColor3f(0.0f, 0.0f, 1.0f);
     glVertex3f(0.5f, -0.5f, 0.0f);
     CHECK_GL(glEnd());
-    /* glBegin(GL_TRIANGLES); */
-    /* constexpr int n = 100; */
-    /* constexpr float pi = 3.1415926535897f; */
-    /* float radius = 0.5f; */
-    /* float inner_radius = 0.25f; */
-    /* static int x = 0; */
-    /* x++; */
-    /* if (x > n) */
-    /*     x -= n; */
-    /* for (int i = 0; i < x; i++) { */
-    /*     float angle = i / (float)n * pi * 2; */
-    /*     float angle_next = (i + 1) / (float)n * pi * 2; */
-    /*     glVertex3f(0.0f, 0.0f, 0.0f); */
-    /*     glVertex3f(radius * sinf(angle), radius * cosf(angle), 0.0f); */
-    /*     glVertex3f(radius * sinf(angle_next), radius * cosf(angle_next), 0.0f); */
-        /* glVertex3f(inner_radius * sinf(angle), inner_radius * cosf(angle), 0.0f); */
-        /* glVertex3f(inner_radius * sinf(angle_next), inner_radius * cosf(angle_next), 0.0f); */
-        /* glVertex3f(inner_radius * sinf(angle), inner_radius * cosf(angle), 0.0f); */
-        /* glVertex3f(radius * sinf(angle_next), radius * cosf(angle_next), 0.0f); */
-    /* } */
-    /* CHECK_GL(glEnd()); */
+    */
+    glBegin(GL_TRIANGLES);
+    constexpr int n = 100;
+    constexpr float pi = 3.1415926535897f; 
+    float radius = 0.4f; 
+    float inner_radius = 0.2f; 
+    static int x = 0; 
+    float offset_x = 0;
+    float offset_y = 0;
+    x++; 
+    if (x > n) 
+        x = n; 
+    glColor3f(1.0f, 0.0f, 0.0f);
+    offset_x = 0;
+    offset_y = 0.5f;
+    for (int i = 0; i < x*5/6; i++) { 
+        float angle = i / (float)n * pi * 2-pi*5/6; // pi*5/6= 150'
+        float angle_next = (i + 1) / (float)n * pi * 2 - pi * 5 / 6;
+        angle = -angle;
+        angle_next = -angle_next; 
+        glVertex3f(radius * sinf(angle)+ offset_x, radius * cosf(angle)+offset_y, 0.0f);
+        glVertex3f(radius * sinf(angle_next) + offset_x, radius * cosf(angle_next) + offset_y, 0.0f);
+        glVertex3f(inner_radius * sinf(angle) + offset_x, inner_radius * cosf(angle) + offset_y, 0.0f);
+        glVertex3f(inner_radius * sinf(angle_next) + offset_x, inner_radius * cosf(angle_next) + offset_y, 0.0f);
+        glVertex3f(inner_radius * sinf(angle) + offset_x, inner_radius * cosf(angle) + offset_y, 0.0f);
+        glVertex3f(radius * sinf(angle_next) + offset_x, radius * cosf(angle_next) + offset_y, 0.0f);
+     }
+
+    glColor3f(0.0f, 1.0f, 0.0f);
+    offset_x = -0.25f * 1.732f;
+    offset_y = -0.25f;
+    for (int i = 0; i < x * 5 / 6; i++) {
+        float angle = i / (float)n * pi * 2 + pi/2; 
+        float angle_next = (i + 1) / (float)n * pi * 2 + pi / 2;
+        glVertex3f(radius * sinf(angle) + offset_x, radius * cosf(angle) + offset_y, 0.0f);
+        glVertex3f(radius * sinf(angle_next) + offset_x, radius * cosf(angle_next) + offset_y, 0.0f);
+        glVertex3f(inner_radius * sinf(angle) + offset_x, inner_radius * cosf(angle) + offset_y, 0.0f);
+        glVertex3f(inner_radius * sinf(angle_next) + offset_x, inner_radius * cosf(angle_next) + offset_y, 0.0f);
+        glVertex3f(inner_radius * sinf(angle) + offset_x, inner_radius * cosf(angle) + offset_y, 0.0f);
+        glVertex3f(radius * sinf(angle_next) + offset_x, radius * cosf(angle_next) + offset_y, 0.0f);
+    }
+
+    glColor3f(0.0f, 0.0f, 1.0f);
+    offset_x = 0.25f * 1.732f;
+    offset_y = -0.25f;
+    for (int i = 0; i < x * 5 / 6; i++) {
+        float angle = i / (float)n * pi * 2 + pi * 1 / 6; 
+        float angle_next = (i + 1) / (float)n * pi * 2 + pi * 1 / 6;
+        glVertex3f(radius * sinf(angle) + offset_x, radius * cosf(angle) + offset_y, 0.0f);
+        glVertex3f(radius * sinf(angle_next) + offset_x, radius * cosf(angle_next) + offset_y, 0.0f);
+        glVertex3f(inner_radius * sinf(angle) + offset_x, inner_radius * cosf(angle) + offset_y, 0.0f);
+        glVertex3f(inner_radius * sinf(angle_next) + offset_x, inner_radius * cosf(angle_next) + offset_y, 0.0f);
+        glVertex3f(inner_radius * sinf(angle) + offset_x, inner_radius * cosf(angle) + offset_y, 0.0f);
+        glVertex3f(radius * sinf(angle_next) + offset_x, radius * cosf(angle_next) + offset_y, 0.0f);
+    }
+    CHECK_GL(glEnd());
 }
 
 int main() {

@@ -10,8 +10,11 @@
 #include <sstream>
 #include <vector>
 
-static std::vector<glm::vec3> vertices;
-static std::vector<glm::uvec3> faces;
+struct Vertex {
+    float x, y, z;
+};
+
+static std::vector<Vertex> vertices;
 
 static void load_obj(std::string path) {
     std::ifstream file(path);
@@ -24,47 +27,21 @@ static void load_obj(std::string path) {
     while (std::getline(file, line)) {
         if (line.substr(0, 2) == "v ") {
             std::istringstream s(line.substr(2));
-            glm::vec3 vertex;
+            Vertex vertex;
             s >> vertex.x >> vertex.y >> vertex.z;
             vertices.push_back(vertex);
-        } else if (line.substr(0, 2) == "f ") {
-            std::istringstream s(line.substr(2));
-            std::string splitted;
-            std::vector<unsigned int> indices;
-            while (std::getline(s, splitted, ' ')) {
-                unsigned int index;
-                std::istringstream(splitted) >> index;
-                indices.push_back(index - 1);
-            }
-            for (size_t i = 2; i < indices.size(); i++) {
-                glm::uvec3 face = {indices[0], indices[i - 1], indices[i]};
-                faces.push_back(face);
-            }
         }
     }
 
     file.close();
-    std::cout << "Loaded " << vertices.size() << " vertices and " << faces.size() << " faces.\n";
-}
-
-static glm::vec3 colorAt(glm::vec3 const &pos) {
-    return (pos + 1.0f) / 2.0f;
+    std::cout << "Loaded " << vertices.size() << " vertices.\n";
 }
 
 static void draw_obj() {
-    glBegin(GL_TRIANGLES);
+    glBegin(GL_POINTS);
 
-    for (auto const &face : faces) {
-        auto const &a = vertices.at(face.x);
-        auto const &b = vertices.at(face.y);
-        auto const &c = vertices.at(face.z);
-
-        glColor3fv(glm::value_ptr(colorAt(a)));
-        glVertex3fv(glm::value_ptr(a));
-        glColor3fv(glm::value_ptr(colorAt(b)));
-        glVertex3fv(glm::value_ptr(b));
-        glColor3fv(glm::value_ptr(colorAt(c)));
-        glVertex3fv(glm::value_ptr(c));
+    for (auto const &vertex : vertices) {
+        glVertex3f(vertex.x, vertex.y, vertex.z);
     }
 
     CHECK_GL(glEnd());

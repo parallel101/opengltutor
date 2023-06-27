@@ -7,7 +7,51 @@
 #include <cstring>
 #include <cstdlib>
 
+#include <array>
+
+static void draw_logo_element(float pi, float radius, float inner_radius, float angle_correction, std::array<float, 3> center, std::array<float, 3> color) {
+    constexpr int n = 100;
+    glBegin(GL_TRIANGLES);
+    for (int i = 0; i < n; ++i) {
+        float angle = i / (float)n * pi * 2;
+        float next_angle = (i + 1) / (float)n * pi * 2;
+        if (angle > 5.0f / 6 * pi && angle < 7.0f / 6 * pi)
+            continue;
+        angle += angle_correction;
+        next_angle += angle_correction;
+
+        glColor3f(color[0], color[1], color[2]);
+        glVertex3f(center[0] + inner_radius * sinf(angle), center[1] + inner_radius * cosf(angle), 0.0f);
+        glVertex3f(center[0] + radius * sinf(angle), center[1] + radius * cosf(angle), 0.0f);
+        glVertex3f(center[0] + radius * sinf(next_angle), center[1] + radius * cosf(next_angle), 0.0f);
+
+        glVertex3f(center[0] + inner_radius * sinf(angle), center[1] + inner_radius * cosf(angle), 0.0f);
+        glVertex3f(center[0] + inner_radius * sinf(next_angle), center[1] + inner_radius * cosf(next_angle), 0.0f);
+        glVertex3f(center[0] + radius * sinf(next_angle), center[1] + radius * cosf(next_angle), 0.0f);
+    }
+    CHECK_GL(glEnd());
+}
+
+static void draw_logo() {
+    constexpr float pi = 3.1415926535897f;
+    float radius = 0.25f;
+    float inner_radius = 0.125f;
+    // edge length of the regular triangle with the three circle centers as vertices
+    float edge = 2 * radius + 0.065;
+
+    float g_angle_corr = 8.0f / 6 * pi;
+    float g_y = -edge* sinf(pi / 3) * 1.0f / 3;
+    float g_x = edge / -2.0f;
+    float r_y = 2.0f * -g_y;
+    float b_x = -g_x;
+
+    draw_logo_element(pi, radius, inner_radius, 0.0f, { 0.0f, r_y, 0.0f }, { 1.0f, 0.0f, 0.0f });
+    draw_logo_element(pi, radius, inner_radius, g_angle_corr, { g_x, g_y, 0.0f }, { 0.0f, 1.0f, 0.0f });
+    draw_logo_element(pi, radius, inner_radius, pi, { b_x, g_y, 0.0f }, { 0.0f, 0.0f, 1.0f });
+}
+
 static void render() {
+#if 0
     glBegin(GL_TRIANGLES);
     glColor3f(1.0f, 0.0f, 0.0f);
     glVertex3f(0.0f, 0.5f, 0.0f);
@@ -16,6 +60,7 @@ static void render() {
     glColor3f(0.0f, 0.0f, 1.0f);
     glVertex3f(0.5f, -0.5f, 0.0f);
     CHECK_GL(glEnd());
+#endif
     /* glBegin(GL_TRIANGLES); */
     /* constexpr int n = 100; */
     /* constexpr float pi = 3.1415926535897f; */
@@ -37,6 +82,8 @@ static void render() {
         /* glVertex3f(radius * sinf(angle_next), radius * cosf(angle_next), 0.0f); */
     /* } */
     /* CHECK_GL(glEnd()); */
+
+    draw_logo();
 }
 
 int main() {

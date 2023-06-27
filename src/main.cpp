@@ -37,7 +37,7 @@ static void draw_logo() {
     float radius = 0.25f;
     float inner_radius = 0.125f;
     // edge length of the regular triangle with the three circle centers as vertices
-    float edge = 2 * radius + 0.065;
+    float edge = 2 * radius + 0.065f;
 
     float g_angle_corr = 8.0f / 6 * pi;
     float g_y = -edge* sinf(pi / 3) * 1.0f / 3;

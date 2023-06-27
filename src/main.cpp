@@ -7,36 +7,35 @@
 #include <cstring>
 #include <cstdlib>
 
+constexpr float pi = 3.1415926535897f; 
+
+void drawRing(float tran_x, float tran_y, float angle_start, float angle_end){
+    glBegin(GL_TRIANGLES); 
+    constexpr int n = 100; 
+    float radius = 0.3f; 
+    float inner_radius = 0.15f; 
+    for (int i = 0; i < n; i++) { 
+        float angle = angle_start + i / (float)n * (angle_end - angle_start ); 
+        float angle_next = angle_start + (i + 1) / (float)n * (angle_end - angle_start ); 
+        glVertex3f(tran_x + radius * sinf(angle), tran_y + radius * cosf(angle), 0.0f); 
+        glVertex3f(tran_x + radius * sinf(angle_next), tran_y + radius * cosf(angle_next), 0.0f); 
+        glVertex3f(tran_x + inner_radius * sinf(angle), tran_y + inner_radius * cosf(angle), 0.0f); 
+
+        glVertex3f(tran_x + inner_radius * sinf(angle_next), tran_y + inner_radius * cosf(angle_next), 0.0f); 
+        glVertex3f(tran_x + inner_radius * sinf(angle), tran_y + inner_radius * cosf(angle), 0.0f); 
+        glVertex3f(tran_x + radius * sinf(angle_next), tran_y + radius * cosf(angle_next), 0.0f); 
+     } 
+     CHECK_GL(glEnd()); 
+}
+
+
 static void render() {
-    glBegin(GL_TRIANGLES);
-    glColor3f(1.0f, 0.0f, 0.0f);
-    glVertex3f(0.0f, 0.5f, 0.0f);
-    glColor3f(0.0f, 1.0f, 0.0f);
-    glVertex3f(-0.5f, -0.5f, 0.0f);
-    glColor3f(0.0f, 0.0f, 1.0f);
-    glVertex3f(0.5f, -0.5f, 0.0f);
-    CHECK_GL(glEnd());
-    /* glBegin(GL_TRIANGLES); */
-    /* constexpr int n = 100; */
-    /* constexpr float pi = 3.1415926535897f; */
-    /* float radius = 0.5f; */
-    /* float inner_radius = 0.25f; */
-    /* static int x = 0; */
-    /* x++; */
-    /* if (x > n) */
-    /*     x -= n; */
-    /* for (int i = 0; i < x; i++) { */
-    /*     float angle = i / (float)n * pi * 2; */
-    /*     float angle_next = (i + 1) / (float)n * pi * 2; */
-    /*     glVertex3f(0.0f, 0.0f, 0.0f); */
-    /*     glVertex3f(radius * sinf(angle), radius * cosf(angle), 0.0f); */
-    /*     glVertex3f(radius * sinf(angle_next), radius * cosf(angle_next), 0.0f); */
-        /* glVertex3f(inner_radius * sinf(angle), inner_radius * cosf(angle), 0.0f); */
-        /* glVertex3f(inner_radius * sinf(angle_next), inner_radius * cosf(angle_next), 0.0f); */
-        /* glVertex3f(inner_radius * sinf(angle), inner_radius * cosf(angle), 0.0f); */
-        /* glVertex3f(radius * sinf(angle_next), radius * cosf(angle_next), 0.0f); */
-    /* } */
-    /* CHECK_GL(glEnd()); */
+    glColor3f(1.0f,0.0,0.0);
+    drawRing(0,0.5,(7/ 6.f) * pi,(17/ 6.f) * pi);
+    glColor3f(0.0f,1.0,0.0);
+    drawRing(0.5*cosf(7/6.f*pi),0.5*sinf(7/6.f*pi),(1/ 2.f) * pi,(13/ 6.f) * pi);
+    glColor3f(0.0f,0.0,1.0);
+    drawRing(0.5*cosf(11/6.f*pi),0.5*sinf(11/6.f*pi),(1/ 6.f) * pi,(11/6.f) * pi);
 }
 
 int main() {
@@ -53,6 +52,8 @@ int main() {
     glfwWindowHint(GLFW_OPENGL_API, GLFW_OPENGL_API);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, version / 10);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, version % 10);
+    glfwWindowHint(GLFW_SAMPLES, 8);
+
     if (version >= 33) {
         glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 #ifdef __APPLE__
@@ -103,8 +104,8 @@ int main() {
     CHECK_GL(glEnable(GL_BLEND));
     CHECK_GL(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
     CHECK_GL(glPointSize(64.0f));
-
-    // start main game loop
+    CHECK_GL(glEnable(GL_MULTISAMPLE));
+        // start main game loop
     while (!glfwWindowShouldClose(window)) {
         // render graphics
         CHECK_GL(glClear(GL_COLOR_BUFFER_BIT));

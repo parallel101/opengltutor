@@ -8,35 +8,45 @@
 #include <cstdlib>
 
 static void render() {
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glLoadIdentity();
+
+    // 头
+    glBegin(GL_POLYGON);
+    glColor3f(1.0, 1.0, 0.0); // 黄色
+    glVertex3f(-0.2f, 0.2f, 0.0f);
+    glVertex3f(0.2f, 0.2f, 0.0f);
+    glVertex3f(0.1f, -0.2f, 0.0f);
+    glVertex3f(-0.1f, -0.2f, 0.0f);
+    glEnd();
+
+    // 身体
     glBegin(GL_TRIANGLES);
-    glColor3f(1.0f, 0.0f, 0.0f);
-    glVertex3f(0.0f, 0.5f, 0.0f);
-    glColor3f(0.0f, 1.0f, 0.0f);
-    glVertex3f(-0.5f, -0.5f, 0.0f);
-    glColor3f(0.0f, 0.0f, 1.0f);
-    glVertex3f(0.5f, -0.5f, 0.0f);
-    CHECK_GL(glEnd());
-    /* glBegin(GL_TRIANGLES); */
-    /* constexpr int n = 100; */
-    /* constexpr float pi = 3.1415926535897f; */
-    /* float radius = 0.5f; */
-    /* float inner_radius = 0.25f; */
-    /* static int x = 0; */
-    /* x++; */
-    /* if (x > n) */
-    /*     x -= n; */
-    /* for (int i = 0; i < x; i++) { */
-    /*     float angle = i / (float)n * pi * 2; */
-    /*     float angle_next = (i + 1) / (float)n * pi * 2; */
-    /*     glVertex3f(0.0f, 0.0f, 0.0f); */
-    /*     glVertex3f(radius * sinf(angle), radius * cosf(angle), 0.0f); */
-    /*     glVertex3f(radius * sinf(angle_next), radius * cosf(angle_next), 0.0f); */
-        /* glVertex3f(inner_radius * sinf(angle), inner_radius * cosf(angle), 0.0f); */
-        /* glVertex3f(inner_radius * sinf(angle_next), inner_radius * cosf(angle_next), 0.0f); */
-        /* glVertex3f(inner_radius * sinf(angle), inner_radius * cosf(angle), 0.0f); */
-        /* glVertex3f(radius * sinf(angle_next), radius * cosf(angle_next), 0.0f); */
-    /* } */
-    /* CHECK_GL(glEnd()); */
+    glColor3f(0.0, 0.0, 1.0); // 蓝色
+    glVertex3f(0.0f, -0.3f, 0.0f);
+    glVertex3f(-0.3f, -0.6f, 0.0f);
+    glVertex3f(0.3f, -0.6f, 0.0f);
+    glEnd();
+
+    // 手
+    glBegin(GL_LINES);
+    glColor3f(1.0, 0.0, 0.0); // 红色
+    glVertex3f(-0.3f, -0.3f, 0.0f);
+    glVertex3f(-0.5f, -0.5f, 0.0f); // 左手
+    glVertex3f(0.3f, -0.3f, 0.0f);
+    glVertex3f(0.5f, -0.5f, 0.0f); // 右手
+    glEnd();
+
+    // 脚
+    glBegin(GL_LINES);
+    glColor3f(1.0, 0.0, 0.0); // 红色
+    glVertex3f(-0.1f, -0.7f, 0.0f);
+    glVertex3f(-0.2f, -0.9f, 0.0f); // 左脚
+    glVertex3f(0.1f, -0.7f, 0.0f);
+    glVertex3f(0.2f, -0.9f, 0.0f); // 右脚
+    glEnd();
+
+    glFlush();
 }
 
 int main() {

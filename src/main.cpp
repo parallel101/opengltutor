@@ -6,37 +6,204 @@
 #include <iostream>
 #include <cstring>
 #include <cstdlib>
+#include <vector>
+
+constexpr float PI = 3.1415926535897f;
+
+float DigToPI(float dig)
+{
+    return dig / 360.f * 2 * PI;
+}
+
+struct Point
+{
+    float x;
+    float y;
+    float z;
+};
+
+struct Color
+{
+    float r;
+    float g;
+    float b;
+};
+
+struct Triangle
+{
+    Point vertexes[3];
+    Color color;
+};
+
+
+static std::vector<Triangle> SpawnTaiji()
+{
+    std::vector<Triangle> res;
+    // µ×É«
+    float radius = 0.75f;
+    for (int i = 0; i < 360; i++)
+    {
+        int ni = i + 1;
+        float angle = DigToPI(i);
+        float angleNext = DigToPI(ni);
+
+        if (i >= 0 && i < 90)
+        {
+            // È«°×
+            Triangle t;
+            t.color = {1.0f, 1.0f, 1.0f};
+            t.vertexes[0] = { 0.0f, 0.0f, 0.0f };
+            t.vertexes[1] = { radius * sinf(angle), radius * cosf(angle), 0.0f };
+            t.vertexes[2] = { radius * sinf(angleNext), radius * cosf(angleNext), 0.0f };
+            res.push_back(t);
+        }
+
+        if (i >= 90 && i < 180)
+        {
+            float angleSemi = DigToPI(180.f - 2 * (180.f - i));
+            float angleSemiN = DigToPI(180.f - 2 * (180.f - ni));
+            float radiusSemi = radius / 2;
+
+            // °×µ×
+            {
+                Triangle t;
+                t.color = { 1.0f, 1.0f, 1.0f };
+                t.vertexes[0] = { 0.0f, 0.0f, 0.0f };
+                t.vertexes[1] = { radius * sinf(angle), radius * cosf(angle), 0.0f };
+                t.vertexes[2] = { radius * sinf(angleNext), radius * cosf(angleNext), 0.0f };
+                res.push_back(t);
+            }
+            // ºì°ëÔ²
+            {
+                Triangle t;
+                t.color = { 1.0f, 0.0f, 0.0f };
+                t.vertexes[0] = { 0.0f, 0.0f, 0.0f };
+                t.vertexes[1] = { radiusSemi * sinf(angleSemi), radiusSemi * cosf(angleSemi) - radiusSemi, 0.0f };
+                t.vertexes[2] = { radiusSemi * sinf(angleSemiN), radiusSemi * cosf(angleSemiN) - radiusSemi, 0.0f };
+                res.push_back(t);
+            }
+        }
+
+        if (i >= 180 && i < 270)
+        {
+            // È«ºì
+            {
+                Triangle t;
+                t.color = { 1.0f, 0.0f, 0.0f };
+                t.vertexes[0] = { 0.0f, 0.0f, 0.0f };
+                t.vertexes[1] = { radius * sinf(angle), radius * cosf(angle), 0.0f };
+                t.vertexes[2] = { radius * sinf(angleNext), radius * cosf(angleNext), 0.0f };
+                res.push_back(t);
+            }
+        }
+
+        if (i >= 270 && i < 360)
+        {
+            float angleSemi = DigToPI(180.f - 2 * (360 - i) + 180.f);
+            float angleSemiN = DigToPI(180.f - 2 * (360 - ni) + 180.f);
+            float radiusSemi = radius / 2;
+
+            // ºìµ×
+            {
+                Triangle t;
+                t.color = { 1.0f, 0.0f, 0.0f };
+                t.vertexes[0] = { 0.0f, 0.0f, 0.0f };
+                t.vertexes[1] = { radius * sinf(angle), radius * cosf(angle), 0.0f };
+                t.vertexes[2] = { radius * sinf(angleNext), radius * cosf(angleNext), 0.0f };
+                res.push_back(t);
+            }
+
+            // °×°ëÔ²
+            {
+                Triangle t;
+                t.color = { 1.0f, 1.0f, 1.0f };
+                t.vertexes[0] = { 0.0f, 0.0f, 0.0f };
+                t.vertexes[1] = { radiusSemi * sinf(angleSemi), radiusSemi * cosf(angleSemi) + radiusSemi, 0.0f };
+                t.vertexes[2] = { radiusSemi * sinf(angleSemiN), radiusSemi * cosf(angleSemiN) + radiusSemi, 0.0f };
+                res.push_back(t);
+            }
+        }
+    }
+
+    // Á½¸öÔ²
+    float radiusSmall = radius / 4;
+    for (int i = 0; i < 360; i++)
+    {
+        int ni = i + 1;
+        float angle = DigToPI(i);
+        float angleNext = DigToPI(ni);
+
+        // È«ºì
+        {
+            Triangle t;
+            t.color = { 1.0f, 0.0f, 0.0f };
+            t.vertexes[0] = { 0.0f, radius / 2, 0.0f };
+            t.vertexes[1] = { radiusSmall * sinf(angle), radiusSmall * cosf(angle) + radius / 2, 0.0f };
+            t.vertexes[2] = { radiusSmall * sinf(angleNext), radiusSmall * cosf(angleNext) + radius / 2, 0.0f };
+            res.push_back(t);
+        }
+
+        // È«°×
+        {
+            Triangle t;
+            t.color = { 1.0f, 1.0f, 1.0f };
+            t.vertexes[0] = { 0.0f, -radius / 2, 0.0f };
+            t.vertexes[1] = { radiusSmall * sinf(angle), radiusSmall * cosf(angle) - radius / 2, 0.0f };
+            t.vertexes[2] = { radiusSmall * sinf(angleNext), radiusSmall * cosf(angleNext) - radius / 2, 0.0f };
+            res.push_back(t);
+        }
+    }
+
+    return res;
+}
+
+static std::vector<Triangle> taiji = SpawnTaiji();
+
+Point Rotate(const Point& in, Point o, float d)
+{
+    float dPi = DigToPI(d);
+    Point r;
+    r.x = in.x * cosf(dPi) - in.y * sinf(dPi);
+    r.y = in.x * sinf(dPi) + in.y * cosf(dPi);
+    r.z = in.z;
+
+    return r;
+}
+
+Triangle Rotate(const Triangle& in, Point o, float d)
+{
+    Triangle r;
+
+    r.color = in.color;
+
+    r.vertexes[0] = Rotate(in.vertexes[0], o, d);
+    r.vertexes[1] = Rotate(in.vertexes[1], o, d);
+    r.vertexes[2] = Rotate(in.vertexes[2], o, d);
+
+    return r;
+}
+
+int rot = 0;
 
 static void render() {
     glBegin(GL_TRIANGLES);
-    glColor3f(1.0f, 0.0f, 0.0f);
-    glVertex3f(0.0f, 0.5f, 0.0f);
-    glColor3f(0.0f, 1.0f, 0.0f);
-    glVertex3f(-0.5f, -0.5f, 0.0f);
-    glColor3f(0.0f, 0.0f, 1.0f);
-    glVertex3f(0.5f, -0.5f, 0.0f);
+
+    if (rot > 360)
+    {
+        rot = 0;
+    }
+    rot++;
+
+    for (const auto& triangle : taiji)
+    {
+        auto newTriangle = Rotate(triangle, Point{ 0, 0, 0 }, rot);
+        glColor3f(newTriangle.color.r, newTriangle.color.g, newTriangle.color.b);
+        glVertex3f(newTriangle.vertexes[0].x, newTriangle.vertexes[0].y, newTriangle.vertexes[0].z);
+        glVertex3f(newTriangle.vertexes[1].x, newTriangle.vertexes[1].y, newTriangle.vertexes[1].z);
+        glVertex3f(newTriangle.vertexes[2].x, newTriangle.vertexes[2].y, newTriangle.vertexes[2].z);
+    }
+
     CHECK_GL(glEnd());
-    /* glBegin(GL_TRIANGLES); */
-    /* constexpr int n = 100; */
-    /* constexpr float pi = 3.1415926535897f; */
-    /* float radius = 0.5f; */
-    /* float inner_radius = 0.25f; */
-    /* static int x = 0; */
-    /* x++; */
-    /* if (x > n) */
-    /*     x -= n; */
-    /* for (int i = 0; i < x; i++) { */
-    /*     float angle = i / (float)n * pi * 2; */
-    /*     float angle_next = (i + 1) / (float)n * pi * 2; */
-    /*     glVertex3f(0.0f, 0.0f, 0.0f); */
-    /*     glVertex3f(radius * sinf(angle), radius * cosf(angle), 0.0f); */
-    /*     glVertex3f(radius * sinf(angle_next), radius * cosf(angle_next), 0.0f); */
-        /* glVertex3f(inner_radius * sinf(angle), inner_radius * cosf(angle), 0.0f); */
-        /* glVertex3f(inner_radius * sinf(angle_next), inner_radius * cosf(angle_next), 0.0f); */
-        /* glVertex3f(inner_radius * sinf(angle), inner_radius * cosf(angle), 0.0f); */
-        /* glVertex3f(radius * sinf(angle_next), radius * cosf(angle_next), 0.0f); */
-    /* } */
-    /* CHECK_GL(glEnd()); */
 }
 
 int main() {

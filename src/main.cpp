@@ -14,40 +14,51 @@ struct Vertex {
     float x, y, z;
 };
 
-static std::vector<Vertex> vertices = {
-    {0.0f, 0.5f, 0.0f},
-    {-0.5f, -0.5f, 0.0f},
-    {0.5f, -0.5f, 0.0f},
+struct Face {
+    Vertex a, b, c;
 };
 
-static void load_obj(std::string path) {
-    std::ifstream file(path);
-    if (!file.is_open()) {
-        std::cerr << "Failed to open file: " << path << '\n';
-        return;
-    }
+static std::vector<Face> faces = {
+    {
+        {-0.5f, 0.5f, 0.0f},
+        {-0.5f, -0.5f, 0.0f},
+        {0.5f, -0.5f, 0.0f},
+    },
+    {
+        {-0.5f, 0.5f, 0.0f},
+        {0.5f, -0.5f, 0.0f},
+        {0.5f, 0.5f, 0.0f},
+    },
+};
 
-    std::string line;
-    while (std::getline(file, line)) {
-        if (line.substr(0, 2) == "v ") {
-            std::istringstream s(line.substr(2));
-            Vertex vertex;
-            s >> vertex.x >> vertex.y >> vertex.z;
-            vertices.push_back(vertex);
-        }
-    }
+/* static void load_obj(std::string path) { */
+/*     std::ifstream file(path); */
+/*     if (!file.is_open()) { */
+/*         std::cerr << "Failed to open file: " << path << '\n'; */
+/*         return; */
+/*     } */
+/*  */
+/*     std::string line; */
+/*     while (std::getline(file, line)) { */
+/*         if (line.substr(0, 2) == "v ") { */
+/*             std::istringstream s(line.substr(2)); */
+/*             Vertex vertex; */
+/*             s >> vertex.x >> vertex.y >> vertex.z; */
+/*             vertices.push_back(vertex); */
+/*         } */
+/*     } */
+/*  */
+/*     file.close(); */
+/*     std::cout << "Loaded " << vertices.size() << " vertices.\n"; */
+/* } */
 
-    file.close();
-    std::cout << "Loaded " << vertices.size() << " vertices.\n";
-}
+static void render() {
+    glBegin(GL_TRIANGLES);
 
-static void draw_obj() {
-    CHECK_GL(glPointSize(42.0f));
-
-    glBegin(GL_POINTS);
-
-    for (auto const &vertex : vertices) {
-        glVertex3f(vertex.x, vertex.y, vertex.z);
+    for (auto const &face : faces) {
+        glVertex3f(face.a.x, face.a.y, face.a.z);
+        glVertex3f(face.b.x, face.b.y, face.b.z);
+        glVertex3f(face.c.x, face.c.y, face.c.z);
     }
 
     CHECK_GL(glEnd());
@@ -70,17 +81,13 @@ static void mouse_button_callback
         float x = (float)(2 * xpos / width - 1);
         float y = (float)(2 * (height - ypos) / height - 1);
 
-        vertices.push_back(Vertex{x, y, 0});
+        faces[0].a = Vertex{x, y, 0};
     }
 }
 
 static void initialize() {
     /* load_obj("/home/bate/Codes/zeno_assets/assets/monkey.obj"); */
     CHECK_GL(glEnable(GL_DEPTH_TEST));
-}
-
-static void render() {
-    draw_obj();
 }
 
 int main() {

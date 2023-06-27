@@ -14,7 +14,11 @@ struct Vertex {
     float x, y, z;
 };
 
-static std::vector<Vertex> vertices;
+static std::vector<Vertex> vertices = {
+    {0.0f, 0.5f, 0.0f},
+    {-0.5f, -0.5f, 0.0f},
+    {0.5f, -0.5f, 0.0f},
+};
 
 static void load_obj(std::string path) {
     std::ifstream file(path);
@@ -38,6 +42,8 @@ static void load_obj(std::string path) {
 }
 
 static void draw_obj() {
+    CHECK_GL(glPointSize(42.0f));
+
     glBegin(GL_POINTS);
 
     for (auto const &vertex : vertices) {
@@ -47,8 +53,29 @@ static void draw_obj() {
     CHECK_GL(glEnd());
 }
 
+static void mouse_button_callback
+( GLFWwindow *window
+, int button
+, int action
+, int mods
+) {
+    if ( button == GLFW_MOUSE_BUTTON_LEFT
+      && action == GLFW_PRESS
+    ) { // when left mouse button is pressed:
+        double xpos, ypos;
+        int width, height;
+        glfwGetCursorPos(window, &xpos, &ypos);
+        glfwGetWindowSize(window, &width, &height);
+
+        float x = (float)(2 * xpos / width - 1);
+        float y = (float)(2 * (height - ypos) / height - 1);
+
+        vertices.push_back(Vertex{x, y, 0});
+    }
+}
+
 static void initialize() {
-    load_obj("/home/bate/Codes/zeno_assets/assets/monkey.obj");
+    /* load_obj("/home/bate/Codes/zeno_assets/assets/monkey.obj"); */
     CHECK_GL(glEnable(GL_DEPTH_TEST));
 }
 
@@ -115,6 +142,8 @@ int main() {
         return -1;
     }
     std::cerr << "OpenGL version: " << glGetString(GL_VERSION) << '\n';
+
+    glfwSetMouseButtonCallback(window, mouse_button_callback);
 
     initialize();
     // start main game loop

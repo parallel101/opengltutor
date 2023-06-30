@@ -7,7 +7,9 @@
 #include <cstring>
 #include <cstdlib>
 
+
 constexpr float pi = 3.14159265358979f;
+
 
 void drawRing(float center_x, float center_y, float outer_radius, float inner_radius = 0, float begin_angle = 0, float end_angle = 1, int n = 100)
 {
@@ -28,23 +30,70 @@ void drawRing(float center_x, float center_y, float outer_radius, float inner_ra
     CHECK_GL(glEnd());
 }
 
-static void render() {
+
+void drawOpenCVLogo()
+{
     float distance = 0.5f;          // The distance from the center to the origin
     float inner_radius = 0.15f;
     float outer_radius = 0.4f;
 
     // Draw the red ring
     glColor3f(1.0f, 0.0f, 0.0f);
-    drawRing(distance * cosf(3 / 12.0f * 2 * pi), distance * sinf(3 / 12.0f * 2 * pi), outer_radius, inner_radius, 5/6.0f, 10/6.0f);
+    drawRing(distance * cosf(3 / 12.0f * 2 * pi), distance * sinf(3 / 12.0f * 2 * pi), outer_radius, inner_radius, 5 / 6.0f, 10 / 6.0f);
 
     // Draw the green ring
     glColor3f(0.0f, 1.0f, 0.0f);
-    drawRing(distance * cosf(7 / 12.0f * 2 * pi), distance * sinf(7 / 12.0f * 2 * pi), outer_radius, inner_radius, 1/6.0f, 6/6.0f);
+    drawRing(distance * cosf(7 / 12.0f * 2 * pi), distance * sinf(7 / 12.0f * 2 * pi), outer_radius, inner_radius, 1 / 6.0f, 6 / 6.0f);
 
     // Draw the blue ring
     glColor3f(0.0f, 0.0f, 1.0f);
-    drawRing(distance * cosf(11 / 12.0f * 2 * pi), distance * sinf(11 / 12.0f * 2 * pi), outer_radius, inner_radius, 2/6.0f, 7/6.0f);
+    drawRing(distance * cosf(11 / 12.0f * 2 * pi), distance * sinf(11 / 12.0f * 2 * pi), outer_radius, inner_radius, 2 / 6.0f, 7 / 6.0f);
 }
+
+
+void drawTaiChi()
+{
+    float radius = 1.0f;
+
+    glColor3f(1.0f, 1.0f, 1.0f);
+    glBegin(GL_POLYGON);
+    glVertex2f(0.0f, 1.0f);
+    glVertex2f(1.0f, 1.0f);
+    glVertex2f(1.0f, -1.0f);
+    glVertex2f(0.0f, -1.0f);
+    CHECK_GL(glEnd());
+
+    drawRing(0.0f, 0.0f, radius, 0.0f, 0.25f, 0.75f);
+    glColor3f(0.0f, 0.0f, 0.0f);
+    drawRing(0.0f, 0.0f, radius, 0.0f, 0.75f, 1.25f);
+    glColor3f(1.0f, 1.0f, 1.0f);
+    drawRing(0.0f, 0.5f * radius, 0.5f * radius);
+    glColor3f(0.0f, 0.0f, 0.0f);
+    drawRing(0.0f, -0.5f * radius, 0.5f * radius);
+    drawRing(0.0f, 0.5f * radius, 0.2f * radius);
+    glColor3f(1.0f, 1.0f, 1.0f);
+    drawRing(0.0f, -0.5f * radius, 0.2f * radius);
+}
+
+
+static void render() {
+    // option 1: draw the OpenCV Logo
+    // 
+    // option 2: draw the TaiChi Logo
+
+    switch (1)
+    {
+    case 1:
+        drawOpenCVLogo();
+        break;
+    case 2:
+        drawTaiChi();
+        break;
+    default:
+        break;
+    }
+}
+
 
 int main() {
     if (!glfwInit()) {

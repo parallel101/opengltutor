@@ -16,7 +16,7 @@ void plotCircle(std::vector<float> center, float radius, std::vector<float> colo
     for (int i = 0; i < iter; i++) {
         float angle = i / (float)iter * pi * 2;
         float angle_next = (i + 1) / (float)iter * pi * 2;
-        glVertex3f(center.at(0), center.at(1), center.at(2));
+        glVertex3f(center.at(0), center.at(1), depth);
         glVertex3f(center.at(0) + radius * sinf(angle), center.at(1) + radius * cosf(angle), depth);
         glVertex3f(center.at(0) + radius * sinf(angle_next), center.at(1) + radius * cosf(angle_next), depth);
     }

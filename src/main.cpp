@@ -39,6 +39,59 @@ static void render() {
     /* CHECK_GL(glEnd()); */
 }
 
+
+static void renderRing(float x, float y, float radius, float inner_radius, float r, float g, float b, int start, int end) {
+    constexpr int n = 3600;
+    constexpr float pi = 3.1415926535897f;
+    start *= 10; 
+    end *= 10;
+
+    static int cnt = 0;
+    static int ok = 0;
+    if (ok) {
+        cnt = n;
+    }
+    else {
+        cnt += 10;
+        if (cnt > n) {
+            cnt -= n;
+            ok += 1;
+        }
+    }
+
+    for (int i = 0; i <= cnt; i++) {
+        if (start <= end) {
+            if (i > start && i <= end) continue;
+        }
+        else {
+            if (i > start || i <= end) continue;
+        }
+        float angel = i / (float)n * pi * 2;
+        float angel_next = (i + 1) / (float)n * pi * 2;
+        glColor3f(r, g, b);
+        glVertex3f(radius * sinf(angel) + x,       radius * cosf(angel) + y,       0.0f);
+        glVertex3f(radius * sinf(angel_next) + x,  radius * cosf(angel_next) + y,  0.0f);
+        glVertex3f(inner_radius * sinf(angel) + x, inner_radius * cosf(angel) + y, 0.0f);
+
+        glVertex3f(inner_radius * sinf(angel) + x,      inner_radius * cosf(angel) + y,      0.0f);
+        glVertex3f(inner_radius * sinf(angel_next) + x, inner_radius * cosf(angel_next) + y, 0.0f);
+        glVertex3f(radius * sinf(angel_next) + x,       radius * cosf(angel_next) + y,       0.0f);
+    }
+}
+
+static void renderCVLogo() {
+    glBegin(GL_TRIANGLES);
+    float r = 0.4f;
+    float r_in = 0.4f * r;
+
+    constexpr float sq = 0.43301270189f;
+
+    renderRing(-sq, -0.25f,  r, r_in, 0.0f, 1.0f, 0.0f, 30,  90);
+    renderRing(sq,  -0.25f,  r, r_in, 0.0f, 0.0f, 1.0f, 330, 30);
+    renderRing(0.0f,  0.5f,  r, r_in, 1.0f, 0.0f, 0.0f, 150, 210);
+    CHECK_GL(glEnd());
+}
+
 int main() {
     if (!glfwInit()) {
         const char *errmsg;
@@ -108,7 +161,8 @@ int main() {
     while (!glfwWindowShouldClose(window)) {
         // render graphics
         CHECK_GL(glClear(GL_COLOR_BUFFER_BIT));
-        render();
+        //render();
+        renderCVLogo();
         // refresh screen
         glfwSwapBuffers(window);
         glfwPollEvents();

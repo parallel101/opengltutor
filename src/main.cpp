@@ -7,36 +7,53 @@
 #include <cstring>
 #include <cstdlib>
 
-static void render() {
-    glBegin(GL_TRIANGLES);
-    glColor3f(1.0f, 0.0f, 0.0f);
-    glVertex3f(0.0f, 0.5f, 0.0f);
-    glColor3f(0.0f, 1.0f, 0.0f);
-    glVertex3f(-0.5f, -0.5f, 0.0f);
-    glColor3f(0.0f, 0.0f, 1.0f);
-    glVertex3f(0.5f, -0.5f, 0.0f);
+using vec3 = glm::vec3;
+using vec2 = glm::vec2;
+
+void draw_annulas(vec3 center, float outer_radius, float inner_radius, vec3 color, float scale = 1.0f, int subdiv = 100, vec2 gap_range = {0.0f, 0.0f}, bool gap_mask = false) {
+    // if :gap_mask is true, gap in the :gap_range, else draw in the :gap_range
+
+    constexpr float pi = 3.1415926535897f;
+    float r_o = scale * outer_radius;
+    float r_i = scale * inner_radius;
+    const vec3& C = center;
+    const int& n = subdiv;
+    
+    int gap_begin = gap_range.x * n;
+    int gap_end = gap_range.y * n;
+
+    glBegin(GL_TRIANGLES);   
+    glColor3f(color.x, color.y, color.z);
+    for (int i = 0; i < n; i++) {
+        float angle = i / (float)n * pi * 2;
+        float angle_next = (i + 1) / (float)n * pi * 2;
+
+        if (gap_mask && gap_begin <= i && i < gap_end) {
+          continue;
+        } else if (!gap_mask && !(gap_begin <= i && i < gap_end)) {
+          continue;
+        }
+        glVertex3f(C.x + r_o * sinf(angle), C.y + r_o * cosf(angle), 0.0f);
+        glVertex3f(C.x + r_o * sinf(angle_next), C.y + r_o * cosf(angle_next), 0.0f);
+        glVertex3f(C.x + r_i * sinf(angle), C.y + r_i * cosf(angle), 0.0f);
+        
+        glVertex3f(C.x + r_i * sinf(angle_next), C.y + r_i * cosf(angle_next), 0.0f);
+        glVertex3f(C.x + r_i * sinf(angle), C.y + r_i * cosf(angle), 0.0f);
+        glVertex3f(C.x + r_o * sinf(angle_next), C.y + r_o * cosf(angle_next), 0.0f);
+    }
     CHECK_GL(glEnd());
-    /* glBegin(GL_TRIANGLES); */
-    /* constexpr int n = 100; */
-    /* constexpr float pi = 3.1415926535897f; */
-    /* float radius = 0.5f; */
-    /* float inner_radius = 0.25f; */
-    /* static int x = 0; */
-    /* x++; */
-    /* if (x > n) */
-    /*     x -= n; */
-    /* for (int i = 0; i < x; i++) { */
-    /*     float angle = i / (float)n * pi * 2; */
-    /*     float angle_next = (i + 1) / (float)n * pi * 2; */
-    /*     glVertex3f(0.0f, 0.0f, 0.0f); */
-    /*     glVertex3f(radius * sinf(angle), radius * cosf(angle), 0.0f); */
-    /*     glVertex3f(radius * sinf(angle_next), radius * cosf(angle_next), 0.0f); */
-        /* glVertex3f(inner_radius * sinf(angle), inner_radius * cosf(angle), 0.0f); */
-        /* glVertex3f(inner_radius * sinf(angle_next), inner_radius * cosf(angle_next), 0.0f); */
-        /* glVertex3f(inner_radius * sinf(angle), inner_radius * cosf(angle), 0.0f); */
-        /* glVertex3f(radius * sinf(angle_next), radius * cosf(angle_next), 0.0f); */
-    /* } */
-    /* CHECK_GL(glEnd()); */
+}
+
+static void render() {
+    constexpr float scale_factor = 0.76f;
+    constexpr int subdiv_number = 120;
+    constexpr float inner_radius = 0.5f, outer_radius = 0.2f;
+    constexpr float _short = 0.25f;
+    vec3 tri_sides = {_short, 2 * _short, _short * sqrtf(3)};
+
+    draw_annulas(vec3(0.0f, tri_sides.y, 0.0f), inner_radius, outer_radius, vec3(1.0f, 0.0f, 0.0f), scale_factor, subdiv_number, vec2(0.5f-1.0f/12.0f, 0.5f+1.0f/12.0f), true);
+    draw_annulas(vec3(-tri_sides.z, -tri_sides.x, 0.0f), inner_radius, outer_radius, vec3(0.0f, 1.0f, 0.0f), scale_factor, subdiv_number, vec2(1.0f/12.0f, 1.0f/4.0f), true);
+    draw_annulas(vec3(tri_sides.z, -tri_sides.x, 0.0f), inner_radius, outer_radius, vec3(0.0f, 0.0f, 1.0f), scale_factor, subdiv_number, vec2(1.0/12.0f, 1.0f-1.0f/12.0f), false);
 }
 
 int main() {
@@ -61,7 +78,7 @@ int main() {
     }
 
     // Create window
-    GLFWwindow *window = glfwCreateWindow(640, 640, "Example", NULL, NULL);
+    GLFWwindow *window = glfwCreateWindow(640, 640, "Homework1: OpenCV Logo", nullptr, nullptr);
     if (!window) {
         const char *errmsg;
         glfwGetError(&errmsg);

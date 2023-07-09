@@ -7,7 +7,74 @@
 #include <cstring>
 #include <cstdlib>
 
+struct pos {
+    float x;
+    float y;
+};
+
+struct color {
+    float r;
+    float g;
+    float b;
+};
+
+struct skipIndex {
+    int small;
+    int big;
+};
+
+
+static void drawLogo(const pos& pos,const color& color,const skipIndex& skip) {
+    constexpr int n = 100;
+
+    glColor3f(color.r, color.g, color.b);
+    glBegin(GL_TRIANGLES);
+    
+    constexpr float pi = 3.1415926535897f;
+    float radius = 0.3f;
+    float inner_radius = 0.15f;
+   
+    bool twoPart = false;
+    skipIndex sk1 = skip;
+    skipIndex sk2 = skipIndex{ 0, 0 };
+    if (skip.small > skip.big) {
+        sk1.big = 100;
+        sk2.small = 0;
+        sk2.big = skip.big;
+
+        twoPart = true;
+    }
+
+    for (int i = 0; i < n; i++) {
+        if (i <=  sk1.big && i >= sk1.small) {
+            continue;
+        }
+       
+        if (twoPart && i < sk2.big && i >= sk2.small) {
+            continue;
+        }
+        
+        float angle = i / (float)n * pi * 2;
+        float angle_next = (i + 1) / (float)n * pi * 2;
+
+        glVertex3f(pos.x + radius * sinf(angle), pos.y + radius * cosf(angle), 0.0f);
+        glVertex3f(pos.x + radius * sinf(angle_next), pos.y + radius * cosf(angle_next), 0.0f);
+        glVertex3f(pos.x + inner_radius * sinf(angle), pos.y + inner_radius * cosf(angle), 0.0f);
+
+        glVertex3f(pos.x + radius * sinf(angle_next), pos.y + radius * cosf(angle_next), 0.0f);
+        glVertex3f(pos.x + inner_radius * sinf(angle), pos.y + inner_radius * cosf(angle), 0.0f);
+        glVertex3f(pos.x + inner_radius * sinf(angle_next), pos.y + inner_radius * cosf(angle_next), 0.0f);
+
+    }
+    CHECK_GL(glEnd());
+}
+
 static void render() {
+    drawLogo(pos{ 0.0f,0.5f }, color{ 1.0f,0.0f,0.0f }, skipIndex{40,60});
+    drawLogo(pos{ -0.5f,-0.25f }, color{ 0.0f,1.0f,0.0f }, skipIndex{ 10,24 });
+    drawLogo(pos{ 0.5f,-0.25f }, color{ 0.0f,0.0f,1.0f }, skipIndex{90,10 });
+}
+static void render2() {
     glBegin(GL_TRIANGLES);
     glColor3f(1.0f, 0.0f, 0.0f);
     glVertex3f(0.0f, 0.5f, 0.0f);

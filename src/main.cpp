@@ -1,10 +1,5 @@
 #include "check_gl.hpp"
 #include <iostream>
-#ifdef CMAKE_FOUND_X11
-#define GLFW_EXPOSE_NATIVE_X11
-#include <GLFW/glfw3native.h>
-#include <X11/extensions/shape.h>
-#endif
 #include "Game.hpp"
 
 template <class ...Ts>
@@ -41,6 +36,8 @@ int main() {
         glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 #endif
     }
+
+    // enable 4x MSAA
     glfwWindowHint(GLFW_SAMPLES, 4);
 
     // Enable transparent framebuffer
@@ -90,21 +87,6 @@ int main() {
             }
         }
     }
-
-#ifdef CMAKE_FOUND_X11
-    // Setup mouse click-through
-    if (transparent) {
-        auto dpy = glfwGetX11Display();
-        int shape_event_base, shape_error_base;
-        if (XShapeQueryExtension(dpy, &shape_event_base, &shape_error_base)) {
-            auto win = glfwGetX11Window(window);
-            Region region = XCreateRegion();
-            XShapeCombineRegion(dpy, win, ShapeInput, 0, 0, region, ShapeSet);
-            XDestroyRegion(region);
-            XFlush(dpy);
-        }
-    }
-#endif
 
     // Load glXXX function pointers (only after this you may use OpenGL functions)
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {

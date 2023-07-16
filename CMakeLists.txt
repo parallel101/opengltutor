@@ -14,22 +14,13 @@ project(opengltutor
 
 if (PROJECT_BINARY_DIR STREQUAL PROJECT_SOURCE_DIR)
     message(FATAL_ERROR "The binary directory of CMake cannot be the same as source directory! "
-        "Please consider use 'cmake -B build' to specify a different binary directory. "
+        "Do not use 'cmake .'! Please consider use 'cmake -B build' to specify a different binary directory. "
         "Otherwise this project may fail to build, or make Git hard to exclude binary files. "
         "For Windows, it is highly recommended to use Visual Studio as IDE for CMake projects.")
 endif()
 
-if (UNIX AND NOT APPLE)
-    find_package(X11 QUIET)
-    if (X11_FOUND)
-        link_libraries(${X11_LIBRARIES})
-        include_directories(${X11_INCLUDE_DIR})
-    endif()
-    add_definitions(-DCMAKE_FOUND_X11)
-endif()
-
 if (NOT MSVC)
-    find_program(CCACHE_PROGRAM ccache)  # See https://ccache.dev
+    find_program(CCACHE_PROGRAM ccache)  # Compilation speed up: https://ccache.dev
     if (CCACHE_PROGRAM)
         message(STATUS "Found CCache: ${CCACHE_PROGRAM}")
         set_property(GLOBAL PROPERTY RULE_LAUNCH_COMPILE ${CCACHE_PROGRAM})
@@ -37,7 +28,7 @@ if (NOT MSVC)
     endif()
 endif()
 
-if (MSVC)
+if (MSVC)  # 1. fix string literial cannot include unicode characters; 2. rid min and max macros; 3. get back M_PI, M_E macros
     add_compile_options($<$<COMPILE_LANG_AND_ID:CXX,MSVC>:/utf-8$<SEMICOLON>/DNOMINMAX$<SEMICOLON>/D_USE_MATH_DEFINES>)
     add_compile_options($<$<COMPILE_LANG_AND_ID:C,MSVC>:/utf-8$<SEMICOLON>/DNOMINMAX$<SEMICOLON>/D_USE_MATH_DEFINES>)
 endif()

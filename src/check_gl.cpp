@@ -48,107 +48,52 @@ static void APIENTRY opengl_debug_message_callback(
     GLenum severity, GLsizei length,
     const GLchar *msg, const void *data)
 {
-    const char *_source;
-    const char *_type;
-    const char *_severity;
+    if (severity == GL_DEBUG_SEVERITY_NOTIFICATION) return;
+
+    const char *_source = "???";
+    const char *_type = "???";
+    const char *_severity = "???";
 
     switch (source) {
-    case GL_DEBUG_SOURCE_API:
-        _source = "API";
-        break;
-
-    case GL_DEBUG_SOURCE_WINDOW_SYSTEM:
-        _source = "WINDOW SYSTEM";
-        break;
-
-    case GL_DEBUG_SOURCE_SHADER_COMPILER:
-        _source = "SHADER COMPILER";
-        break;
-
-    case GL_DEBUG_SOURCE_THIRD_PARTY:
-        _source = "THIRD PARTY";
-        break;
-
-    case GL_DEBUG_SOURCE_APPLICATION:
-        _source = "APPLICATION";
-        break;
-
-    case GL_DEBUG_SOURCE_OTHER:
-        _source = "UNKNOWN";
-        break;
-
-    default:
-        _source = "UNKNOWN";
-        break;
-    }
+#define PER_GL_DEBUG_SOURCE(x) case GL_DEBUG_SOURCE_##x: _source = #x; break;
+    PER_GL_DEBUG_SOURCE(API)
+    PER_GL_DEBUG_SOURCE(WINDOW_SYSTEM)
+    PER_GL_DEBUG_SOURCE(SHADER_COMPILER)
+    PER_GL_DEBUG_SOURCE(THIRD_PARTY)
+    PER_GL_DEBUG_SOURCE(APPLICATION)
+    PER_GL_DEBUG_SOURCE(OTHER)
+#undef PER_GL_DEBUG_SOURCE
+    };
 
     switch (type) {
-    case GL_DEBUG_TYPE_ERROR:
-        _type = "ERROR";
-        break;
-
-    case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR:
-        _type = "DEPRECATED BEHAVIOR";
-        break;
-
-    case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR:
-        _type = "UDEFINED BEHAVIOR";
-        break;
-
-    case GL_DEBUG_TYPE_PORTABILITY:
-        _type = "PORTABILITY";
-        break;
-
-    case GL_DEBUG_TYPE_PERFORMANCE:
-        _type = "PERFORMANCE";
-        break;
-
-    case GL_DEBUG_TYPE_OTHER:
-        _type = "OTHER";
-        break;
-
-    case GL_DEBUG_TYPE_MARKER:
-        _type = "MARKER";
-        break;
-
-    default:
-        _type = "UNKNOWN";
-        break;
+#define PER_GL_DEBUG_TYPE(x) case GL_DEBUG_TYPE_##x: _type = #x; break;
+    PER_GL_DEBUG_TYPE(ERROR)
+    PER_GL_DEBUG_TYPE(UNDEFINED_BEHAVIOR)
+    PER_GL_DEBUG_TYPE(PORTABILITY)
+    PER_GL_DEBUG_TYPE(PERFORMANCE)
+    PER_GL_DEBUG_TYPE(OTHER)
+    PER_GL_DEBUG_TYPE(MARKER)
+#undef PER_GL_DEBUG_TYPE
     }
 
     switch (severity) {
-    case GL_DEBUG_SEVERITY_HIGH:
-        _severity = "HIGH";
-        break;
-
-    case GL_DEBUG_SEVERITY_MEDIUM:
-        _severity = "MEDIUM";
-        break;
-
-    case GL_DEBUG_SEVERITY_LOW:
-        _severity = "LOW";
-        break;
-
-    case GL_DEBUG_SEVERITY_NOTIFICATION:
-        _severity = "NOTIFICATION";
-        break;
-
-    default:
-        _severity = "UNKNOWN";
-        break;
+#define PER_GL_DEBUG_SEVERITY(x) case GL_DEBUG_SEVERITY_##x: _severity = #x; break;
+    PER_GL_DEBUG_SEVERITY(HIGH)
+    PER_GL_DEBUG_SEVERITY(MEDIUM)
+    PER_GL_DEBUG_SEVERITY(LOW)
+    PER_GL_DEBUG_SEVERITY(NOTIFICATION)
+#undef PER_GL_DEBUG_SEVERITY
     }
 
-    if (severity != GL_DEBUG_SEVERITY_NOTIFICATION) {
-        fprintf(stderr, "OpenGL error [%d]: %s of %s severity, raised from %s: %s\n",
-                id, _type, _severity, _source, msg);
-/* #ifndef NDEBUG */
-/* #if defined(_MSC_VER) */
-/*         __debugbreak(); */
-/* #elif defined(__GNUC__) */
-/*         __builtin_trap(); */
-/* #endif */
-/* #endif */
-    }
+    fprintf(stderr, "OpenGL error [%d]: %s of %s severity, raised from %s: %s\n",
+            id, _type, _severity, _source, msg);
+    /* #ifndef NDEBUG */
+    /* #if defined(_MSC_VER) */
+    /*         __debugbreak(); */
+    /* #elif defined(__GNUC__) */
+    /*         __builtin_trap(); */
+    /* #endif */
+    /* #endif */
 }
 
 void check_gl::opengl_try_enable_debug_message() {

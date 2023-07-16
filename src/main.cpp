@@ -7,21 +7,16 @@
 #endif
 #include "Game.hpp"
 
-namespace {
-static struct {
-    template <class Ret, class ...Ts>
-    using function_type = Ret(Ts...);
-
-    template <class ...Ts>
-    operator function_type<void, GLFWwindow *, Ts...> *() {
-        return [] (GLFWwindow *window, Ts ...args) {
-            auto game = (Game *)glfwGetWindowUserPointer(window);
-            if (game) [[likely]] {
-                game->mouse_button_callback(args...);
-            }
-        };
-    }
-} glfw_callback_helper;
+template <class ...Ts>
+static void (*glfw_game_callback(void (Game::*pFn)(Ts...)))(GLFWwindow *, Ts...) {
+    static void (Game::*gpFn)(Ts...);
+    gpFn = pFn;
+    return [] (GLFWwindow *window, Ts ...args) -> void {
+        auto game = (Game *)glfwGetWindowUserPointer(window);
+        if (game) [[likely]] {
+            (game->*gpFn)(args...);
+        }
+    };
 }
 
 int main() {
@@ -65,7 +60,7 @@ int main() {
 
     // Test if window creation succeed
     if (!window) {
-        opengl_show_glfw_error_diagnose();
+        check_gl::opengl_show_glfw_error_diagnose();
         glfwTerminate();
         return -1;
     }
@@ -117,7 +112,7 @@ int main() {
         std::cerr << "GLAD failed to load GL functions\n";
         return -1;
     }
-    opengl_try_enable_debug_message();
+    check_gl::opengl_try_enable_debug_message();
 
     // Print diagnostic information
     std::cerr << "OpenGL version: " << (const char *)glGetString(GL_VERSION) << '\n';
@@ -126,7 +121,10 @@ int main() {
     Game game(window);
 
     // Register window callbacks
-    glfwSetMouseButtonCallback(window, glfw_callback_helper);
+    glfwSetCursorPosCallback(window, glfw_game_callback(&Game::cursor_pos_callback));
+    glfwSetMouseButtonCallback(window, glfw_game_callback(&Game::mouse_button_callback));
+    glfwSetScrollCallback(window, glfw_game_callback(&Game::scroll_callback));
+    glfwSetKeyCallback(window, glfw_game_callback(&Game::key_callback));
 
     // Initialize data structures
     game.initialize();

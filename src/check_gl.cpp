@@ -6,7 +6,7 @@
 #include <string>
 #include <set>
 
-const char *opengl_errno_name(GLenum err) {
+const char *check_gl::opengl_errno_name(GLenum err) {
     switch (err) {
 #define PER_GL_ERROR(x) case GL_##x: return #x;
     PER_GL_ERROR(NO_ERROR)
@@ -21,7 +21,7 @@ const char *opengl_errno_name(GLenum err) {
     return "unknown error";
 }
 
-void check_gl_error(const char *filename, int lineno, const char *expr) {
+void check_gl::opengl_check_error(const char *filename, int lineno, const char *expr) {
     GLenum err = glad_glGetError();
     if (err != GL_NO_ERROR) {
         std::cerr << filename << ":" << lineno << ": " << expr << " failed: " << opengl_errno_name(err) << '\n';
@@ -29,7 +29,7 @@ void check_gl_error(const char *filename, int lineno, const char *expr) {
     }
 }
 
-bool opengl_has_extension(const char *extension) {
+bool check_gl::opengl_has_extension(const char *extension) {
     static auto exts = [] {
         GLint n = 0;
         glGetIntegerv(GL_NUM_EXTENSIONS, &n);
@@ -43,7 +43,7 @@ bool opengl_has_extension(const char *extension) {
     return exts.find(extension) != exts.end();
 }
 
-void APIENTRY opengl_debug_message_callback(
+static void APIENTRY opengl_debug_message_callback(
     GLenum source, GLenum type, GLuint id,
     GLenum severity, GLsizei length,
     const GLchar *msg, const void *data)
@@ -151,7 +151,7 @@ void APIENTRY opengl_debug_message_callback(
     }
 }
 
-void opengl_try_enable_debug_message() {
+void check_gl::opengl_try_enable_debug_message() {
     if (opengl_has_extension("GL_ARB_debug_output")) {
         auto my_glDebugMessageCallbackARB = (PFNGLDEBUGMESSAGECALLBACKPROC)glfwGetProcAddress("glDebugMessageCallbackARB");
         if (my_glDebugMessageCallbackARB) {
@@ -161,7 +161,7 @@ void opengl_try_enable_debug_message() {
     }
 }
 
-void opengl_show_glfw_error_diagnose() {
+void check_gl::opengl_show_glfw_error_diagnose() {
     const char *errmsg;
     glfwGetError(&errmsg);
     if (!errmsg) errmsg = "(no error)";

@@ -6,11 +6,11 @@ build/
 out/
 CMakeSettings.json
 .vscode/
-.~*
 # clion files
 cmake-build-debug/
 cmake-build-release/
 .idea/
 .clang-format
-# baby files
+# teacher files
 prebuild/
+.~*

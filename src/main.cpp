@@ -2,18 +2,6 @@
 #include <iostream>
 #include "Game.hpp"
 
-template <class ...Ts>
-static void (*glfw_game_callback(void (Game::*pFn)(Ts...)))(GLFWwindow *, Ts...) {
-    static void (Game::*gpFn)(Ts...);
-    gpFn = pFn;
-    return [] (GLFWwindow *window, Ts ...args) -> void {
-        auto game = (Game *)glfwGetWindowUserPointer(window);
-        if (game) [[likely]] {
-            (game->*gpFn)(args...);
-        }
-    };
-}
-
 int main() {
     // Initalize GLFW library
     if (!glfwInit()) {
@@ -41,7 +29,7 @@ int main() {
     glfwWindowHint(GLFW_SAMPLES, 4);
 
     // Enable transparent framebuffer
-    constexpr bool transparent = true;
+    constexpr bool transparent = false;
     if (transparent) {
         glfwWindowHint(GLFW_TRANSPARENT_FRAMEBUFFER, GLFW_TRUE);
         glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
@@ -100,13 +88,8 @@ int main() {
     std::cerr << "OpenGL version: " << (const char *)glGetString(GL_VERSION) << '\n';
 
     // Create game instance
-    Game game(window);
-
-    // Register window callbacks
-    glfwSetCursorPosCallback(window, glfw_game_callback(&Game::cursor_pos_callback));
-    glfwSetMouseButtonCallback(window, glfw_game_callback(&Game::mouse_button_callback));
-    glfwSetScrollCallback(window, glfw_game_callback(&Game::scroll_callback));
-    glfwSetKeyCallback(window, glfw_game_callback(&Game::key_callback));
+    auto &game = Game::get();
+    game.set_window(window);
 
     // Initialize data structures
     game.initialize();

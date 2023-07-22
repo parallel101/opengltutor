@@ -1,5 +1,6 @@
 #include "check_gl.hpp"
 #include "OBJ.hpp"
+#include "Game.hpp"
 #include <stdexcept>
 #include <iostream>
 #include <fstream>
@@ -64,9 +65,12 @@ void OBJ::load_obj(std::string path) {
     std::cout << "Loaded " << vertices.size() << " vertices, " << faces.size() << " faces.\n";
 }
 
+static glm::vec3 perspective_divide(glm::vec4 pos) {
+    return glm::vec3(pos.x / pos.w, pos.y / pos.w, pos.z / pos.w);
+}
+
 void OBJ::draw_obj() {
     glBegin(GL_TRIANGLES);
-
     glColor3f(0.9f, 0.6f, 0.1f);
 
     for (auto face : faces) {

@@ -11,7 +11,7 @@ int main() {
         std::cerr << "failed to initialize GLFW: " << errmsg << '\n';
         return -1;
     }
-    
+
     // Hint the version required: OpenGL 2.0
     constexpr int version = 20;
     glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_API);

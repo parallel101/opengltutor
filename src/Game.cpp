@@ -27,10 +27,10 @@ void Game::set_window(GLFWwindow *window) {
 }
 
 void Game::initialize() {
-    /* m_private->monkey.load_obj("/home/bate/Codes/opengltutor/assets/monkey.obj"); */
-    m_private->monkey.load_obj("/home/bate/Codes/opengltutor/assets/cube.obj");
+    m_private->monkey.load_obj("/home/bate/Codes/opengltutor/assets/monkey.obj");
+    /* m_private->monkey.load_obj("/home/bate/Codes/opengltutor/assets/cube.obj"); */
     CHECK_GL(glEnable(GL_DEPTH_TEST));
-    CHECK_GL(glEnable(GL_MULTISAMPLE));
+    CHECK_GL(glDisable(GL_MULTISAMPLE));
     CHECK_GL(glEnable(GL_BLEND));
     CHECK_GL(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
     CHECK_GL(glEnable(GL_LIGHTING));

@@ -27,7 +27,8 @@ void Game::set_window(GLFWwindow *window) {
 }
 
 void Game::initialize() {
-    m_private->monkey.load_obj("/home/bate/Codes/opengltutor/assets/monkey.obj");
+    m_private->monkey.load_obj("/home/bate/Codes/opengltutor/assets/opencvpart.obj");
+    /* m_private->monkey.load_obj("/home/bate/Codes/opengltutor/assets/monkey.obj"); */
     /* m_private->monkey.load_obj("/home/bate/Codes/opengltutor/assets/cube.obj"); */
     CHECK_GL(glEnable(GL_DEPTH_TEST));
     CHECK_GL(glDisable(GL_MULTISAMPLE));
@@ -53,17 +54,14 @@ void Game::render() {
     CHECK_GL(glMatrixMode(GL_PROJECTION));
     CHECK_GL(glLoadMatrixf(glm::value_ptr(projection)));
     
-    /* glm::vec3 eye(0, 0, 5); */
-    /* glm::vec3 center(0, 0, 0); */
-    /* glm::vec3 up(0, 1, 0); */
-    /* glm::mat4x4 view = glm::lookAt(eye, center, up); */
     auto view = m_inputCtl.get_view_matrix();
     
-    static float angle = 0.0f;
     glm::mat4x4 model(1.0f);
-    /* model = glm::rotate(model, glm::radians(angle), glm::vec3(0.0f, 1.0f, 0.0f)); */
-    /* model = glm::translate(model, glm::vec3(0.0f, 0.12f * glm::sin(glm::radians(angle) * 2.718f), 0.0f)); */
-    /* angle += 0.5f; */
+
+    static float angle = 0.0f;
+    model = glm::rotate(model, glm::radians(angle), glm::vec3(0.0f, 1.0f, 0.0f));
+    model = glm::translate(model, glm::vec3(0.0f, 0.12f * glm::sin(glm::radians(angle) * 2.718f), 0.0f));
+    angle += 0.5f;
     
     CHECK_GL(glMatrixMode(GL_MODELVIEW));
     CHECK_GL(glLoadMatrixf(glm::value_ptr(view * model)));

@@ -1,4 +1,5 @@
 #include "Game.hpp"
+#include "InputCtl.hpp"
 #include "check_gl.hpp"
 #include <glm/glm.hpp>
 #include <glm/ext.hpp>

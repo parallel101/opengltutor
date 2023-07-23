@@ -13,7 +13,7 @@ struct InputCtl {
         float zoom_speed = 0.2f;
         float orbit_speed = 1.0f;
         float drift_speed = 1.0f;
-        float pan_speed = 1.0f;
+        float pan_speed = 2.0f;
         MouseBinding orbit_binding = {Modifier::kNone, MouseButton::kLMB};
         MouseBinding drift_binding = {Modifier::kCtrl, MouseButton::kLMB};
         MouseBinding pan_binding = {Modifier::kShift, MouseButton::kLMB};

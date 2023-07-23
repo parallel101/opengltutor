@@ -26,10 +26,14 @@ void Game::set_window(GLFWwindow *window) {
     m_inputCtl.register_callbacks(window);
 }
 
+#ifndef OPENGLTUTOR_HOME // this should be defined by CMakeLists.txt, your project root directory
+#define OPENGLTUTOR_HOME
+#endif
+
 void Game::initialize() {
-    m_private->monkey.load_obj("/home/bate/Codes/opengltutor/assets/opencvpart.obj");
-    /* m_private->monkey.load_obj("/home/bate/Codes/opengltutor/assets/monkey.obj"); */
-    /* m_private->monkey.load_obj("/home/bate/Codes/opengltutor/assets/cube.obj"); */
+    /* m_private->monkey.load_obj(OPENGLTUTOR_HOME "assets/opencvpart.obj"); */
+    m_private->monkey.load_obj(OPENGLTUTOR_HOME "assets/monkey.obj");
+    /* m_private->monkey.load_obj(OPENGLTUTOR_HOME "assets/cube.obj"); */
     CHECK_GL(glEnable(GL_DEPTH_TEST));
     CHECK_GL(glDisable(GL_MULTISAMPLE));
     CHECK_GL(glEnable(GL_BLEND));
@@ -66,5 +70,6 @@ void Game::render() {
     CHECK_GL(glMatrixMode(GL_MODELVIEW));
     CHECK_GL(glLoadMatrixf(glm::value_ptr(view * model)));
 
+    glColor3f(0.9f, 0.6f, 0.1f);
     m_private->monkey.draw_obj();
 }

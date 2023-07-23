@@ -44,3 +44,5 @@ add_subdirectory(glfw)
 target_link_libraries(${PROJECT_NAME} PUBLIC glfw)
 add_subdirectory(glad)
 target_link_libraries(${PROJECT_NAME} PUBLIC glad)
+
+target_compile_definitions(${PROJECT_NAME} PUBLIC -DOPENGLTUTOR_HOME=\"${CMAKE_CURRENT_SOURCE_DIR}/\")

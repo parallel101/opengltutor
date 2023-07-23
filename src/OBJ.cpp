@@ -54,7 +54,6 @@ static glm::vec3 compute_normal(glm::vec3 a, glm::vec3 b, glm::vec3 c) {
 
 void OBJ::draw_obj() {
     glBegin(GL_TRIANGLES);
-    glColor3f(0.9f, 0.6f, 0.1f);
 
     for (auto face : faces) {
         auto const &a = vertices.at(face[0]);

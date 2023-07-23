@@ -31,9 +31,10 @@ void Game::set_window(GLFWwindow *window) {
 #endif
 
 void Game::initialize() {
-    /* m_private->monkey.load_obj(OPENGLTUTOR_HOME "assets/opencvpart.obj"); */
-    m_private->monkey.load_obj(OPENGLTUTOR_HOME "assets/monkey.obj");
-    /* m_private->monkey.load_obj(OPENGLTUTOR_HOME "assets/cube.obj"); */
+    //m_private->monkey.load_obj(OPENGLTUTOR_HOME "assets/opencvpart.obj");
+    //m_private->monkey.load_obj(OPENGLTUTOR_HOME "assets/monkey.obj");
+    //m_private->monkey.load_obj(OPENGLTUTOR_HOME "assets/cube.obj");
+    m_private->monkey = create_opencv_obj(20, 0.3f, 1.0f, 0.2f);
     CHECK_GL(glEnable(GL_DEPTH_TEST));
     CHECK_GL(glDisable(GL_MULTISAMPLE));
     CHECK_GL(glEnable(GL_BLEND));
@@ -59,17 +60,33 @@ void Game::render() {
     CHECK_GL(glLoadMatrixf(glm::value_ptr(projection)));
     
     auto view = m_inputCtl.get_view_matrix();
-    
-    glm::mat4x4 model(1.0f);
+
+    constexpr float colors[3][3] = {
+        {1.0f, 0.0f, 0.0f},
+        {0.0f, 1.0f, 0.0f},
+        {0.0f, 0.0f, 1.0f},
+    };
+    constexpr glm::vec3 translates[3] = {
+        {+0.0f, +0.7f, 0.0f},
+        {+0.7f, -0.7f, 0.0f},
+        {-0.7f, -0.7f, 0.0f},
+    };
+    constexpr float offset_angle[3] = {-60.0f, 120.0f, 60.0f};
 
     static float angle = 0.0f;
-    model = glm::rotate(model, glm::radians(angle), glm::vec3(0.0f, 1.0f, 0.0f));
-    model = glm::translate(model, glm::vec3(0.0f, 0.12f * glm::sin(glm::radians(angle) * 2.718f), 0.0f));
-    angle += 0.5f;
-    
-    CHECK_GL(glMatrixMode(GL_MODELVIEW));
-    CHECK_GL(glLoadMatrixf(glm::value_ptr(view * model)));
+    for (int i = 0; i < 3; ++i) {
+        glm::mat4x4 model(1.0f);
+        model = glm::translate(model, glm::vec3(0.0f, 0.12f * glm::sin(glm::radians(angle) * 2.718f), 0.0f));
+        model = glm::translate(model, translates[i]);
+        model = glm::rotate(model, glm::radians(60.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+        model = glm::rotate(model, glm::radians(angle + offset_angle[i]), glm::vec3(0.0f, 1.0f, 0.0f));
+        model = glm::scale(model, glm::vec3(0.6f, 0.6f, 0.6f));
+        
+        CHECK_GL(glMatrixMode(GL_MODELVIEW));
+        CHECK_GL(glLoadMatrixf(glm::value_ptr(view * model)));
 
-    glColor3f(0.9f, 0.6f, 0.1f);
-    m_private->monkey.draw_obj();
+        glColor3fv(colors[i]);
+        m_private->monkey.draw_obj();
+    }
+    angle += 0.5f;
 }

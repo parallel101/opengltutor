@@ -70,3 +70,45 @@ void OBJ::draw_obj() {
 
     CHECK_GL(glEnd());
 }
+
+OBJ create_opencv_obj(glm::uint division, float inner_radius, float outer_radius, float height) {
+    OBJ obj{};
+
+    constexpr float PI = glm::pi<float>();
+    constexpr float max_theta = PI * 5.0f / 3.0f;
+
+    const float delta_theta = max_theta / division;
+
+    const float y = height / 2.0f;
+
+    for (glm::uint i = 0; i <= division; ++i) {
+        const float theta = i * delta_theta;
+        const float cos_t = glm::cos(theta);
+        const float sin_t = glm::sin(theta);
+
+        obj.vertices.emplace_back(inner_radius * sin_t, +y, inner_radius * cos_t);
+        obj.vertices.emplace_back(inner_radius * sin_t, -y, inner_radius * cos_t);
+        obj.vertices.emplace_back(outer_radius * sin_t, -y, outer_radius * cos_t);
+        obj.vertices.emplace_back(outer_radius * sin_t, +y, outer_radius * cos_t);
+    }
+
+    for (glm::uint i = 0; i < division; ++i) {
+        const glm::uint offset = i * 4;
+
+        obj.faces.push_back(glm::uvec3{offset + 0, offset + 3, offset + 7});
+        obj.faces.push_back(glm::uvec3{offset + 0, offset + 7, offset + 4});
+        obj.faces.push_back(glm::uvec3{offset + 0, offset + 4, offset + 5});
+        obj.faces.push_back(glm::uvec3{offset + 0, offset + 5, offset + 1});
+        obj.faces.push_back(glm::uvec3{offset + 1, offset + 5, offset + 6});
+        obj.faces.push_back(glm::uvec3{offset + 1, offset + 6, offset + 2});
+        obj.faces.push_back(glm::uvec3{offset + 2, offset + 6, offset + 7});
+        obj.faces.push_back(glm::uvec3{offset + 2, offset + 7, offset + 3});
+    }
+
+    obj.faces.push_back(glm::uvec3{0, 1, 2});
+    obj.faces.push_back(glm::uvec3{0, 2, 3});
+    obj.faces.push_back(glm::uvec3{4 * division, 4 * division + 3, 4 * division + 2});
+    obj.faces.push_back(glm::uvec3{4 * division, 4 * division + 2, 4 * division + 1});
+
+    return obj;
+}

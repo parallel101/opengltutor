@@ -10,3 +10,5 @@ struct OBJ {
     void load_obj(std::string path);
     void draw_obj();
 };
+
+OBJ create_opencv_obj(glm::uint division, float inner_radius, float outer_radius, float height);

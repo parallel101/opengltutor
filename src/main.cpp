@@ -1,107 +1,94 @@
 #include "check_gl.hpp"
 #include <iostream>
-#include "Game.hpp"
+#include <cmath>
 
-int main() {
-    // Initalize GLFW library
-    if (!glfwInit()) {
-        const char *errmsg;
-        glfwGetError(&errmsg);
-        if (!errmsg) errmsg = "(no error)";
-        std::cerr << "failed to initialize GLFW: " << errmsg << '\n';
-        return -1;
+
+static void paintCircularRing(bool flag, int st, int ed, float cx, float cy, float r, float g, float b)
+{
+    constexpr int n = 360;
+    constexpr float pi = 3.141592653589793f;
+    float radius = 0.3f;
+    float inner_radius = 0.15f;
+
+    glColor3f(r, g, b);
+
+    for (int i = 0; i < n; i++)
+    {
+        if (flag)
+        {
+            if (i <= st || i >= ed)
+            {
+                continue;
+            }
+        }
+        else
+        {
+            if (i >= st && i <= ed)
+            {
+                continue;
+            }
+        }
+
+
+        float angle = i / (float)n * pi * 2;
+        float angle_next = (i + 1) / (float)n * pi * 2;
+
+        glVertex3f(radius * std::sinf(angle) + cx, radius * std::cosf(angle) + cy, 0.0f);
+        glVertex3f(radius * std::sinf(angle_next) + cx, radius * std::cosf(angle_next) + cy, 0.0f);
+        glVertex3f(inner_radius * std::sinf(angle) + cx, inner_radius * std::cosf(angle) + cy, 0.0f);
+
+        glVertex3f(inner_radius * std::sinf(angle_next) + cx, inner_radius * std::cosf(angle_next) + cy, 0.0f);
+        glVertex3f(inner_radius * std::sinf(angle) + cx, inner_radius * std::cosf(angle) + cy, 0.0f);
+        glVertex3f(radius * std::sinf(angle_next) + cx, radius * std::cosf(angle_next) + cy, 0.0f);
+
+    }
+}
+
+static void render()
+{
+    glBegin(GL_TRIANGLES);
+
+    paintCircularRing(false, 150, 210, 0.0f, 0.35f, 1.0f, 0.0f, 0.0f);
+
+    paintCircularRing(false, 30, 89, -0.35f, -0.35f, 0.0f, 1.0f, 0.0f);
+
+    paintCircularRing(true, 30, 330, 0.35f, -0.35f, 0.0f, 0.0f, 1.0f);
+
+    CHECK_GL(glEnd());
+}
+
+int main()
+{
+    if (!glfwInit())
+    {
+        throw std::runtime_error("failed to initialize GLFW");
     }
 
-    // Hint the version required: OpenGL 2.0
-    constexpr int version = 20;
-    glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_API);
-    glfwWindowHint(GLFW_CONTEXT_CREATION_API, GLFW_NATIVE_CONTEXT_API);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, version / 10);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, version % 10);
-    if (version >= 33) {
-        glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-#ifdef __APPLE__
-        glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-#endif
-    }
-
-    // enable 4x MSAA
-    glfwWindowHint(GLFW_SAMPLES, 4);
-
-    // Enable transparent framebuffer
-    constexpr bool transparent = false;
-    if (transparent) {
-        glfwWindowHint(GLFW_TRANSPARENT_FRAMEBUFFER, GLFW_TRUE);
-        glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
-        glfwWindowHint(GLFW_DECORATED, GLFW_FALSE);
-        glfwWindowHint(GLFW_FLOATING, GLFW_TRUE);
-        glfwWindowHint(GLFW_FOCUS_ON_SHOW, GLFW_FALSE);
-        glfwWindowHint(GLFW_FOCUSED, GLFW_FALSE);
-    }
-
-    // Create main window
-    constexpr char title[] = "Example";
-    GLFWwindow *window = glfwCreateWindow(1024, 768, title, NULL, NULL);
-
-    // Test if window creation succeed
-    if (!window) {
-        check_gl::opengl_show_glfw_error_diagnose();
+    auto window = glfwCreateWindow(640, 640, "Example", nullptr, nullptr);
+    if (!window)
+    {
         glfwTerminate();
-        return -1;
+        throw std::runtime_error("GLFW failed to create window");
     }
+
     glfwMakeContextCurrent(window);
 
-    // Switch to fullscreen mode
-    constexpr bool fullscreen = false;
-    if (fullscreen) {
-        GLFWmonitor *monitor = glfwGetPrimaryMonitor();
-        if (monitor) {
-            const GLFWvidmode *mode = glfwGetVideoMode(monitor);
-            if (mode) {
-                glfwSetWindowSize(window, mode->width, mode->height);
-                glfwSetWindowMonitor(window, monitor, 0, 0, mode->width, mode->height, mode->refreshRate);
-                std::cerr << "Entered fullscreen mode: " << mode->width << 'x' << mode->height
-                    << " at " << mode->refreshRate << " Hz\n";
-            }
-        }
-    } else {
-        GLFWmonitor *monitor = glfwGetPrimaryMonitor();
-        if (monitor) {
-            const GLFWvidmode *mode = glfwGetVideoMode(monitor);
-            if (mode) {
-                int width, height;
-                glfwGetWindowSize(window, &width, &height);
-                glfwSetWindowPos(window, (mode->width - width) / 2, (mode->height - height) / 2);
-            }
-        }
-    }
-
-    // Load glXXX function pointers (only after this you may use OpenGL functions)
-    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
+    if (!gladLoadGL())
+    {
         glfwTerminate();
-        std::cerr << "GLAD failed to load GL functions\n";
-        return -1;
+        throw std::runtime_error("GLAD failed to load GL functions");
     }
-    check_gl::opengl_try_enable_debug_message();
 
-    // Print diagnostic information
-    std::cerr << "OpenGL version: " << (const char *)glGetString(GL_VERSION) << '\n';
+    std::cout << "OpenGL Version: " << glGetString(GL_VERSION) << std::endl;
 
-    // Create game instance
-    auto &game = Game::get();
-    game.set_window(window);
+    CHECK_GL(glEnable(GL_POINT_SMOOTH));
+    CHECK_GL(glEnable(GL_BLEND));
+    CHECK_GL(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
 
-    // Initialize data structures
-    game.initialize();
-    // Start main game loop
-    while (!glfwWindowShouldClose(window)) {
-        // Render graphics
-        game.render();
-        // Update screen
+    while (!glfwWindowShouldClose(window))
+    {
+        render();
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
-
-    glfwTerminate();
-    return 0;
 }

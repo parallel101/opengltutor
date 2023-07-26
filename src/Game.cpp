@@ -31,8 +31,8 @@ void Game::set_window(GLFWwindow *window) {
 #endif
 
 void Game::initialize() {
-    /* m_private->monkey.load_obj(OPENGLTUTOR_HOME "assets/opencvpart.obj"); */
-    m_private->monkey.load_obj(OPENGLTUTOR_HOME "assets/monkey.obj");
+    m_private->monkey.load_obj(OPENGLTUTOR_HOME "assets/opencvpart.obj");
+    /* m_private->monkey.load_obj(OPENGLTUTOR_HOME "assets/monkey.obj"); */
     /* m_private->monkey.load_obj(OPENGLTUTOR_HOME "assets/cube.obj"); */
     CHECK_GL(glEnable(GL_DEPTH_TEST));
     CHECK_GL(glDisable(GL_MULTISAMPLE));

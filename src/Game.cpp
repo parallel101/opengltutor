@@ -4,14 +4,16 @@
 #include <glm/ext.hpp>
 #include "OBJ.hpp"
 
+#include <vector>
+
 struct Game::Private { // P-IMPL pattern
     glm::mat4x4 viewMat;
     glm::mat4x4 projMat;
 
-    OBJ monkey;
+    std::vector<OBJ> ocvLogo;
 };
 
-Game::Game() : m_private(std::make_unique<Private>()) {}
+Game::Game() : m_private(std::make_unique<Private>()), m_window(nullptr) {}
 
 Game::~Game() = default;
 
@@ -31,11 +33,52 @@ void Game::set_window(GLFWwindow *window) {
 #endif
 
 void Game::initialize() {
-    /* m_private->monkey.load_obj(OPENGLTUTOR_HOME "assets/opencvpart.obj"); */
-    m_private->monkey.load_obj(OPENGLTUTOR_HOME "assets/monkey.obj");
-    /* m_private->monkey.load_obj(OPENGLTUTOR_HOME "assets/cube.obj"); */
+    OBJ ocvpart;
+    ocvpart.load_obj(OPENGLTUTOR_HOME "assets/opencvpart.obj");
+
+    for (size_t i = 0; i < 3; ++i) {
+        m_private->ocvLogo.push_back(ocvpart);
+    }
+    constexpr float short_side = 0.65f;
+    glm::vec3 tri_sides = {short_side, 2 * short_side, short_side * sqrtf(3)};
+
+    auto C0 = glm::vec3(0.0f, tri_sides.y, 0.0f);
+    auto C1 = glm::vec3(-tri_sides.z, -tri_sides.x, 0.0f);
+    auto C2 = glm::vec3(tri_sides.z, -tri_sides.x, 0.0f);
+    
+    std::vector<glm::mat4x4> cvLogoModel;
+
+    auto model = glm::mat4x4(1.0f);
+    model = glm::translate(model, C0);
+    model = glm::rotate(model, glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+    model = glm::rotate(model, glm::radians(150.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+    cvLogoModel.push_back(model);
+
+    model = glm::mat4x4(1.0f);
+    model = glm::translate(model, C1);
+    model = glm::rotate(model, glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+    model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+    cvLogoModel.push_back(model);
+
+    model = glm::mat4x4(1.0f);
+    model = glm::translate(model, C2);
+    model = glm::rotate(model, glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+    model = glm::rotate(model, glm::radians(-30.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+    cvLogoModel.push_back(model);
+
+    for (size_t i = 0; i < m_private->ocvLogo.size(); ++i) {
+        auto& ocvPart = m_private->ocvLogo.at(i);
+        auto& ocvPartModel = cvLogoModel.at(i);
+        for (auto& vert : ocvPart.vertices) {
+            vert = ocvPartModel * glm::vec4(vert, 1.0f);
+        }
+    }
+
+    //m_private->monkey.load_obj(OPENGLTUTOR_HOME "assets/monkey.obj");
+    //m_private->monkey.load_obj(OPENGLTUTOR_HOME "assets/cube.obj"); 
+
     CHECK_GL(glEnable(GL_DEPTH_TEST));
-    CHECK_GL(glDisable(GL_MULTISAMPLE));
+    CHECK_GL(glEnable(GL_MULTISAMPLE));
     CHECK_GL(glEnable(GL_BLEND));
     CHECK_GL(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
     CHECK_GL(glEnable(GL_LIGHTING));
@@ -44,6 +87,7 @@ void Game::initialize() {
     CHECK_GL(glEnable(GL_CULL_FACE));
     CHECK_GL(glCullFace(GL_BACK));
     CHECK_GL(glFrontFace(GL_CCW));
+    CHECK_GL(glShadeModel(GL_SMOOTH));
 }
 
 void Game::render() {
@@ -57,19 +101,31 @@ void Game::render() {
 
     CHECK_GL(glMatrixMode(GL_PROJECTION));
     CHECK_GL(glLoadMatrixf(glm::value_ptr(projection)));
-    
+
     auto view = m_inputCtl.get_view_matrix();
-    
+
     glm::mat4x4 model(1.0f);
+   
+    static float motionAngle = 0.0f;
+    static constexpr glm::vec3 motionAxis = { 0.0f, 1.0f, 0.0f };
+    static constexpr float motionDelta = 1.2f;
 
-    static float angle = 0.0f;
-    model = glm::rotate(model, glm::radians(angle), glm::vec3(0.0f, 1.0f, 0.0f));
-    model = glm::translate(model, glm::vec3(0.0f, 0.12f * glm::sin(glm::radians(angle) * 2.718f), 0.0f));
-    angle += 0.5f;
-    
     CHECK_GL(glMatrixMode(GL_MODELVIEW));
-    CHECK_GL(glLoadMatrixf(glm::value_ptr(view * model)));
 
-    glColor3f(0.9f, 0.6f, 0.1f);
-    m_private->monkey.draw_obj();
+    model = glm::rotate(glm::mat4(1.0f), glm::radians(motionAngle), motionAxis);
+    CHECK_GL(glLoadMatrixf(glm::value_ptr(view * model)));
+    glColor3f(1.0f, 0.0f, 0.0f);
+    m_private->ocvLogo.at(0).draw_obj();
+
+    model = glm::rotate(glm::mat4(1.0f), glm::radians(motionAngle), motionAxis);
+    CHECK_GL(glLoadMatrixf(glm::value_ptr(view * model)));
+    glColor3f(0.0f, 1.0f, 0.0f);
+    m_private->ocvLogo.at(1).draw_obj();
+
+    model = glm::rotate(glm::mat4(1.0f), glm::radians(motionAngle), motionAxis);
+    CHECK_GL(glLoadMatrixf(glm::value_ptr(view * model)));
+    glColor3f(0.0f, 0.0f, 1.0f);
+    m_private->ocvLogo.at(2).draw_obj();
+
+    motionAngle += motionDelta;
 }

@@ -26,7 +26,7 @@ static auto glfw_input_callback(FpFn fpFn) {
 
 struct CameraState {
     /* glm::mat4x4 transformation; */
-    glm::vec3 eye = {0, 0, 5};
+    glm::vec3 eye = {0, 0, 10};
     glm::vec3 lookat = {0, 0, 0};
     glm::vec3 up_vector = {0, 1, 0};
     glm::vec3 keep_up_axis = {0, 1, 0};

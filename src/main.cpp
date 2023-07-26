@@ -40,7 +40,7 @@ int main() {
     }
 
     // Create main window
-    constexpr char title[] = "Example";
+    constexpr char title[] = "Homework2: OpenCV 3D Logo";
     GLFWwindow *window = glfwCreateWindow(1024, 768, title, NULL, NULL);
 
     // Test if window creation succeed

@@ -5,12 +5,14 @@
 #include "OBJ.hpp"
 
 #include <vector>
+#include <iostream>
 
 struct Game::Private { // P-IMPL pattern
     glm::mat4x4 viewMat;
     glm::mat4x4 projMat;
 
     std::vector<OBJ> ocvLogo;
+    OBJ monkey;
 };
 
 Game::Game() : m_private(std::make_unique<Private>()), m_window(nullptr) {}
@@ -34,7 +36,7 @@ void Game::set_window(GLFWwindow *window) {
 
 void Game::initialize() {
     OBJ ocvpart;
-    ocvpart.load_obj(OPENGLTUTOR_HOME "assets/opencvpart.obj");
+    ocvpart.load_obj(OPENGLTUTOR_HOME "assets/opencvpart_grp.obj", true);
 
     for (size_t i = 0; i < 3; ++i) {
         m_private->ocvLogo.push_back(ocvpart);
@@ -96,6 +98,7 @@ void Game::render() {
     CHECK_GL(glViewport(0, 0, width, height));
 
     CHECK_GL(glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT));
+    glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 
     auto projection = m_inputCtl.get_projection_matrix();
 

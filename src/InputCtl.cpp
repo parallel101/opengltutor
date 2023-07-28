@@ -163,10 +163,6 @@ void InputCtl::cursor_pos_callback(double xpos, double ypos) {
     float y = (float)(2 * (height - ypos) / height - 1);
     glm::vec2 pos(x, y);
 
-    int shiftPressed =
-        glfwGetKey(m_private->window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS ||
-        glfwGetKey(m_private->window, GLFW_KEY_RIGHT_SHIFT) == GLFW_PRESS;
-
     m_private->moving = true;
     auto delta = glm::fract((pos - m_private->lastpos) * 0.5f + 0.5f) * 2.0f - 1.0f;
     if (m_inputPref.orbit_binding.check_is_pressed(m_private->window)) {

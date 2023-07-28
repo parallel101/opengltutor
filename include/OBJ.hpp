@@ -8,5 +8,5 @@ struct OBJ {
     std::vector<glm::uvec3> faces;
 
     void load_obj(std::string path);
-    void draw_obj();
+    void draw_obj(bool isFlat);
 };

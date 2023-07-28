@@ -31,8 +31,8 @@ void Game::set_window(GLFWwindow *window) {
 #endif
 
 void Game::initialize() {
-    m_private->monkey.load_obj(OPENGLTUTOR_HOME "assets/opencvpart.obj");
-    /* m_private->monkey.load_obj(OPENGLTUTOR_HOME "assets/monkey.obj"); */
+    /* m_private->monkey.load_obj(OPENGLTUTOR_HOME "assets/opencvpart.obj"); */
+    m_private->monkey.load_obj(OPENGLTUTOR_HOME "assets/monkey.obj");
     /* m_private->monkey.load_obj(OPENGLTUTOR_HOME "assets/cube.obj"); */
     CHECK_GL(glEnable(GL_DEPTH_TEST));
     CHECK_GL(glDisable(GL_MULTISAMPLE));
@@ -41,6 +41,7 @@ void Game::initialize() {
     CHECK_GL(glEnable(GL_LIGHTING));
     CHECK_GL(glEnable(GL_LIGHT0));
     CHECK_GL(glEnable(GL_COLOR_MATERIAL));
+    /* CHECK_GL(glEnable(GL_NORMALIZE)); */
     CHECK_GL(glEnable(GL_CULL_FACE));
     CHECK_GL(glCullFace(GL_BACK));
     CHECK_GL(glFrontFace(GL_CCW));
@@ -63,13 +64,20 @@ void Game::render() {
     glm::mat4x4 model(1.0f);
 
     static float angle = 0.0f;
-    model = glm::rotate(model, glm::radians(angle), glm::vec3(0.0f, 1.0f, 0.0f));
     model = glm::translate(model, glm::vec3(0.0f, 0.12f * glm::sin(glm::radians(angle) * 2.718f), 0.0f));
+    model = glm::rotate(model, glm::radians(angle), glm::vec3(0.0f, 1.0f, 0.0f));
+    model = glm::scale(model, glm::vec3(0.7f));
     angle += 0.5f;
-    
-    CHECK_GL(glMatrixMode(GL_MODELVIEW));
-    CHECK_GL(glLoadMatrixf(glm::value_ptr(view * model)));
 
     glColor3f(0.9f, 0.6f, 0.1f);
-    m_private->monkey.draw_obj();
+
+    CHECK_GL(glMatrixMode(GL_MODELVIEW));
+    model = glm::translate(glm::mat4x4(1), glm::vec3(0.8f, 0, 0)) * model;
+    CHECK_GL(glLoadMatrixf(glm::value_ptr(view * model)));
+    m_private->monkey.draw_obj(true);
+    
+    CHECK_GL(glMatrixMode(GL_MODELVIEW));
+    model = glm::translate(glm::mat4x4(1), -2.0f * glm::vec3(0.8f, 0, 0)) * model;
+    CHECK_GL(glLoadMatrixf(glm::value_ptr(view * model)));
+    m_private->monkey.draw_obj(false);
 }

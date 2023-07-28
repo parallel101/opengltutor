@@ -64,42 +64,40 @@ static glm::vec3 compute_normal_biased(glm::vec3 a, glm::vec3 b, glm::vec3 c) {
     return n;
 }
 
-void OBJ::draw_obj() {
-    constexpr bool flat = false;
-    CHECK_GL(glShadeModel(flat ? GL_FLAT : GL_SMOOTH));
+void OBJ::draw_obj(bool isFlat) {
+    CHECK_GL(glShadeModel(isFlat ? GL_FLAT : GL_SMOOTH));
 
-    glBegin(GL_TRIANGLES);
-
-    std::vector<glm::vec3> normals(vertices.size());
-
-    for (auto const &face: faces) {
-        auto const &a = vertices.at(face[0]);
-        auto const &b = vertices.at(face[1]);
-        auto const &c = vertices.at(face[2]);
-
-        for (size_t i = 0; i < 3; i++) {
-            normals[face[i]] += compute_normal_biased(a, b, c);
+    std::vector<glm::vec3> normals;
+    if (!isFlat) {
+        normals.resize(vertices.size());
+        for (auto const &face: faces) {
+            auto const &a = vertices.at(face[0]);
+            auto const &b = vertices.at(face[1]);
+            auto const &c = vertices.at(face[2]);
+            for (size_t i = 0; i < 3; i++) {
+                normals[face[i]] += compute_normal_biased(a, b, c);
+            }
+        }
+        for (auto &normal: normals) {
+            normal = glm::normalize(normal);
         }
     }
-    for (auto &normal: normals) {
-        normal = glm::normalize(normal);
-    }
 
+    glBegin(GL_TRIANGLES);
     for (auto const &face: faces) {
         auto const &a = vertices[face[0]];
         auto const &b = vertices[face[1]];
         auto const &c = vertices[face[2]];
-        auto const &an = normals[face[0]];
-        auto const &bn = normals[face[1]];
-        auto const &cn = normals[face[2]];
-
-        glm::vec3 norm = compute_normal(a, b, c);
-        if (flat) {
+        if (isFlat) {
+            glm::vec3 norm = compute_normal(a, b, c);
             glNormal3fv(glm::value_ptr(norm));
             glVertex3fv(glm::value_ptr(a));
             glVertex3fv(glm::value_ptr(b));
             glVertex3fv(glm::value_ptr(c));
         } else {
+            auto const &an = normals[face[0]];
+            auto const &bn = normals[face[1]];
+            auto const &cn = normals[face[2]];
             glNormal3fv(glm::value_ptr(an));
             glVertex3fv(glm::value_ptr(a));
             glNormal3fv(glm::value_ptr(bn));
@@ -108,6 +106,5 @@ void OBJ::draw_obj() {
             glVertex3fv(glm::value_ptr(c));
         }
     }
-
     CHECK_GL(glEnd());
 }

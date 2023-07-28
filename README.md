@@ -6,8 +6,7 @@
 
 国内镜像下载：https://gitee.com/archibate/opengltutor
 
-本分支为最新一课（第三课）的作业项目源码，[要做第一课作业的同学请点击这里跳转到 hw01 分支](https://github.com/parallel101/opengltutor/tree/hw01)。
-提交 PR 时，请在标题中写明是第几课的作业，对于第一课的作业，则应该将目标分支设为 hw01。
+> 本分支为最新一课（第三课）的作业项目源码，[要做第一课作业的同学请点击这里跳转到 hw01 分支](https://github.com/parallel101/opengltutor/tree/hw01)。提交 PR 时，请在标题中写明是第几课的作业，对于第一课的作业，则应该将目标分支设为 hw01。
 
 ## 课程简介
 

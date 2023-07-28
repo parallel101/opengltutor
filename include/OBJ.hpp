@@ -9,4 +9,5 @@ struct OBJ {
 
     void load_obj(std::string path);
     void draw_obj();
+    void draw_obj_smooth();
 };

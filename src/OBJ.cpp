@@ -70,3 +70,42 @@ void OBJ::draw_obj() {
 
     CHECK_GL(glEnd());
 }
+
+void OBJ::draw_obj_smooth() {
+    std::vector<glm::vec3> faceNormalBuffer;
+    std::vector<glm::vec3> vertexNormalBuffer(vertices.size());
+    
+    for (auto& face : faces) {
+        auto const& a = vertices.at(face[0]);
+        auto const& b = vertices.at(face[1]);
+        auto const& c = vertices.at(face[2]);
+
+        glm::vec3 fn = compute_normal(a, b, c);
+        faceNormalBuffer.push_back(fn);
+        vertexNormalBuffer[face[0]] += fn;
+        vertexNormalBuffer[face[1]] += fn;
+        vertexNormalBuffer[face[2]] += fn;
+    }
+    for (auto& vn : vertexNormalBuffer) {
+        vn = glm::normalize(vn);
+    }
+
+    glBegin(GL_TRIANGLES);
+    for (auto const& face : faces) {
+        auto const& a = vertices.at(face[0]);
+        auto const& b = vertices.at(face[1]);
+        auto const& c = vertices.at(face[2]);
+        
+        auto const& n1 = vertexNormalBuffer.at(face[0]);
+        auto const& n2 = vertexNormalBuffer.at(face[1]);
+        auto const& n3 = vertexNormalBuffer.at(face[2]);
+
+        glNormal3fv(glm::value_ptr(n1));
+        glVertex3fv(glm::value_ptr(a));
+        glNormal3fv(glm::value_ptr(n2));
+        glVertex3fv(glm::value_ptr(b));
+        glNormal3fv(glm::value_ptr(n3));
+        glVertex3fv(glm::value_ptr(c));
+    }
+    CHECK_GL(glEnd());
+}

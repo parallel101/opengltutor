@@ -115,17 +115,17 @@ void Game::render() {
     model = glm::rotate(glm::mat4(1.0f), glm::radians(motionAngle), motionAxis);
     CHECK_GL(glLoadMatrixf(glm::value_ptr(view * model)));
     glColor3f(1.0f, 0.0f, 0.0f);
-    m_private->ocvLogo.at(0).draw_obj();
+    m_private->ocvLogo.at(0).draw_obj_smooth();
 
     model = glm::rotate(glm::mat4(1.0f), glm::radians(motionAngle), motionAxis);
     CHECK_GL(glLoadMatrixf(glm::value_ptr(view * model)));
     glColor3f(0.0f, 1.0f, 0.0f);
-    m_private->ocvLogo.at(1).draw_obj();
+    m_private->ocvLogo.at(1).draw_obj_smooth();
 
     model = glm::rotate(glm::mat4(1.0f), glm::radians(motionAngle), motionAxis);
     CHECK_GL(glLoadMatrixf(glm::value_ptr(view * model)));
     glColor3f(0.0f, 0.0f, 1.0f);
-    m_private->ocvLogo.at(2).draw_obj();
+    m_private->ocvLogo.at(2).draw_obj_smooth();
 
     motionAngle += motionDelta;
 }

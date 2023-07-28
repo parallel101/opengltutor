@@ -5,9 +5,8 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
-#include <unordered_map>
 
-void OBJ::load_obj(std::string path, bool enable_group) {
+void OBJ::load_obj(std::string path, bool grouped) {
     std::ifstream file(path);
     if (!file.is_open()) {
         std::cerr << "Failed to open file: " << path << '\n';
@@ -15,7 +14,7 @@ void OBJ::load_obj(std::string path, bool enable_group) {
     }
 
     std::string line;
-    int current_group = -1, grouped_face = 0;
+    unsigned int current_group = 0;
 
     while (std::getline(file, line)) {
         if (line.substr(0, 2) == "v ") {
@@ -37,21 +36,18 @@ void OBJ::load_obj(std::string path, bool enable_group) {
                 glm::uvec3 face = glm::uvec3(indices[0], indices[i - 1], indices[i]);
                 faces.push_back(face);
 
-                if (!enable_group && current_group >= 0) continue;
-                face_groups[current_group].push_back(faces.size() - 1);
-                grouped_face++;
+                smoothing_groups[current_group].push_back(faces.size() - 1);
             }
         } else if (line.substr(0, 7) == "#group ") {
             std::istringstream s(line.substr(7));
             unsigned int group;
             s >> group;
-            current_group = group;
+            if (grouped) current_group = group;
         }
     }
 
     file.close();
     std::cout << "Loaded " << vertices.size() << " vertices, " << faces.size() << " faces.\n";
-    std::cout << grouped_face << " faces grouped.\n";
 }
 
 static glm::vec3 perspective_divide(glm::vec4 pos) {
@@ -79,13 +75,12 @@ static glm::vec3 compute_contrib_normal(glm::vec3 v0, glm::vec3 v1, glm::vec3 v2
     return glm::normalize(norm) * contrib_w;
 }
 
-void OBJ::draw_obj() {
+static void object_draw_flat_pass(OBJ const& obj) {
     glBegin(GL_TRIANGLES);
-
-    for (auto face : faces) {
-        auto const &a = vertices.at(face[0]);
-        auto const &b = vertices.at(face[1]);
-        auto const &c = vertices.at(face[2]);
+    for (auto face : obj.faces) {
+        auto const& a = obj.vertices.at(face[0]);
+        auto const& b = obj.vertices.at(face[1]);
+        auto const& c = obj.vertices.at(face[2]);
 
         glm::vec3 norm = compute_normal(a, b, c);
         glNormal3fv(glm::value_ptr(norm));
@@ -94,38 +89,37 @@ void OBJ::draw_obj() {
         glVertex3fv(glm::value_ptr(b));
         glVertex3fv(glm::value_ptr(c));
     }
-
     CHECK_GL(glEnd());
 }
 
-void OBJ::draw_obj_smooth() {
-    std::vector<glm::vec3> vertexNormalBuffer(vertices.size());
-    
-    // NormalComputePass
-    for (auto& face : faces) {
-        auto const& a = vertices.at(face[0]);
-        auto const& b = vertices.at(face[1]);
-        auto const& c = vertices.at(face[2]);
+static void normal_compute_pass(OBJ const& obj, std::vector<unsigned int> const& face_indices, std::vector<glm::vec3>& vertex_normal_buffer) {
+    for (auto const& index : face_indices) {
+        auto const& face = obj.faces.at(index);
+        auto const& a = obj.vertices.at(face[0]);
+        auto const& b = obj.vertices.at(face[1]);
+        auto const& c = obj.vertices.at(face[2]);
 
-        vertexNormalBuffer[face[0]] += compute_contrib_normal(a, b, c, 0);
-        vertexNormalBuffer[face[1]] += compute_contrib_normal(a, b, c, 1);
-        vertexNormalBuffer[face[2]] += compute_contrib_normal(a, b, c, 2);
+        vertex_normal_buffer[face[0]] += compute_contrib_normal(a, b, c, 0);
+        vertex_normal_buffer[face[1]] += compute_contrib_normal(a, b, c, 1);
+        vertex_normal_buffer[face[2]] += compute_contrib_normal(a, b, c, 2);
     }
-    for (auto& vn : vertexNormalBuffer) {
+    for (auto& vn : vertex_normal_buffer) {
         vn = glm::normalize(vn);
     }
+}
 
-    // ObjectDrawPass
+static void object_draw_smooth_pass(OBJ const& obj, std::vector<unsigned int> const& face_indices, std::vector<glm::vec3> const& vertex_normal_buffer) {
     glBegin(GL_TRIANGLES);
-    for (auto const& face : faces) {
-        auto const& a = vertices.at(face[0]);
-        auto const& b = vertices.at(face[1]);
-        auto const& c = vertices.at(face[2]);
-        
-        auto const& n0 = vertexNormalBuffer.at(face[0]);
-        auto const& n1 = vertexNormalBuffer.at(face[1]);
-        auto const& n2 = vertexNormalBuffer.at(face[2]);
-
+    for (auto const& index : face_indices) {
+        auto const& face = obj.faces.at(index);
+        auto const& a = obj.vertices.at(face[0]);
+        auto const& b = obj.vertices.at(face[1]);
+        auto const& c = obj.vertices.at(face[2]);
+    
+        auto const& n0 = vertex_normal_buffer.at(face[0]);
+        auto const& n1 = vertex_normal_buffer.at(face[1]);
+        auto const& n2 = vertex_normal_buffer.at(face[2]);
+    
         glNormal3fv(glm::value_ptr(n0));
         glVertex3fv(glm::value_ptr(a));
         glNormal3fv(glm::value_ptr(n1));
@@ -136,6 +130,14 @@ void OBJ::draw_obj_smooth() {
     CHECK_GL(glEnd());
 }
 
-void OBJ::draw_obj_group_smooth() {
-    // TODO
+void OBJ::draw_obj() {
+    object_draw_flat_pass(*this);
+}
+
+void OBJ::draw_obj_smooth() {
+    for (auto const& [i, group] : smoothing_groups) {
+        std::vector<glm::vec3> vert_norm_buffer(vertices.size(), glm::vec3(0.0f));
+        normal_compute_pass(*this, group, vert_norm_buffer);
+        object_draw_smooth_pass(*this, group, vert_norm_buffer);
+    }
 }

@@ -52,20 +52,61 @@ static glm::vec3 compute_normal(glm::vec3 a, glm::vec3 b, glm::vec3 c) {
     return glm::normalize(glm::cross(ab, ac));
 }
 
+static glm::vec3 compute_normal_biased(glm::vec3 a, glm::vec3 b, glm::vec3 c) {
+    // jisuan sanjiaoxin faxian, with asin factor
+    glm::vec3 ab = b - a;
+    glm::vec3 ac = c - a;
+    glm::vec3 n = glm::cross(ab, ac);
+    auto nlen = glm::length(n);
+    if (nlen) {
+        n *= glm::asin(nlen / (glm::length(ab) * glm::length(ac))) / nlen;
+    }
+    return n;
+}
+
 void OBJ::draw_obj() {
+    constexpr bool flat = false;
+    CHECK_GL(glShadeModel(flat ? GL_FLAT : GL_SMOOTH));
+
     glBegin(GL_TRIANGLES);
 
-    for (auto face : faces) {
+    std::vector<glm::vec3> normals(vertices.size());
+
+    for (auto const &face: faces) {
         auto const &a = vertices.at(face[0]);
         auto const &b = vertices.at(face[1]);
         auto const &c = vertices.at(face[2]);
 
-        glm::vec3 norm = compute_normal(a, b, c);
-        glNormal3fv(glm::value_ptr(norm));
+        for (size_t i = 0; i < 3; i++) {
+            normals[face[i]] += compute_normal_biased(a, b, c);
+        }
+    }
+    for (auto &normal: normals) {
+        normal = glm::normalize(normal);
+    }
 
-        glVertex3fv(glm::value_ptr(a));
-        glVertex3fv(glm::value_ptr(b));
-        glVertex3fv(glm::value_ptr(c));
+    for (auto const &face: faces) {
+        auto const &a = vertices[face[0]];
+        auto const &b = vertices[face[1]];
+        auto const &c = vertices[face[2]];
+        auto const &an = normals[face[0]];
+        auto const &bn = normals[face[1]];
+        auto const &cn = normals[face[2]];
+
+        glm::vec3 norm = compute_normal(a, b, c);
+        if (flat) {
+            glNormal3fv(glm::value_ptr(norm));
+            glVertex3fv(glm::value_ptr(a));
+            glVertex3fv(glm::value_ptr(b));
+            glVertex3fv(glm::value_ptr(c));
+        } else {
+            glNormal3fv(glm::value_ptr(an));
+            glVertex3fv(glm::value_ptr(a));
+            glNormal3fv(glm::value_ptr(bn));
+            glVertex3fv(glm::value_ptr(b));
+            glNormal3fv(glm::value_ptr(cn));
+            glVertex3fv(glm::value_ptr(c));
+        }
     }
 
     CHECK_GL(glEnd());

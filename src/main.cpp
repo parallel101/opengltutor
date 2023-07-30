@@ -1,105 +1,9 @@
-#include <glm/glm.hpp>
-#include <glm/ext.hpp>
-#include "check_gl.hpp" // includes glad/glad.h
-#include <GLFW/glfw3.h> // must be placed behind glad/glad.h
-#include <stdexcept>
+#include "check_gl.hpp"
 #include <iostream>
-#include <cstring>
-#include <cstdlib>
-
-static void render() {
-    /*glBegin(GL_TRIANGLES);
-    glColor3f(1.0f, 0.0f, 0.0f);
-    glVertex3f(1.0f, 0.0f, 0.0f);
-
-    glColor3f(0.0f, 1.0f, 0.0f);
-    glVertex3f(0.0f, 0.0f, 0.0f);
-
-    glColor3f(0.0f, 0.0f, 1.0f);
-    glVertex3f(1.0f, 1.0f, 0.0f);
-
-
-    glColor3f(0.0f, 0.0f, 1.0f);
-    glVertex3f(0.0f, 1.0f, 0.0f);
-
-    glColor3f(0.0f, 0.0f, 1.0f);
-    glVertex3f(1.0f, 1.0f, 0.0f);
-
-    glColor3f(0.0f, 0.0f, 1.0f);
-    glVertex3f(0.0f, 0.0f, 0.0f);
-    CHECK_GL(glEnd());*/
-    glBegin(GL_TRIANGLES);
-    constexpr int n = 100;
-    constexpr float pi = 3.1415926535897f;
-	float radius = 0.25f;
-    float inner_radius = 0.125f;
-    static int x = 0;
-    //x++;
-    if (x > n) 
-        x -= n;
-    // red
-    for (int i = 0; i < n; i++) {
-        if (i > n * 5 / 12 && i < n * 7 / 12) continue;
-        float angle = i / (float)n * pi * 2;
-        float angle_next = (i + 1) / (float)n * pi * 2;
-        //glVertex3f(0.0f, 0.0f, 0.0f);
-        glColor3f(1.0f, 0.0f, 0.0f);
-        glVertex3f(radius * sinf(angle), radius * cosf(angle) + 0.5f, 0.0f);
-        glColor3f(1.0f, 0.0f, 0.0f);
-        glVertex3f(radius * sinf(angle_next), radius * cosf(angle_next) + 0.5f, 0.0f);
-        glColor3f(1.0f, 0.0f, 0.0f);
-        glVertex3f(inner_radius * sinf(angle), inner_radius * cosf(angle) + 0.5f, 0.0f);
-        glColor3f(1.0f, 0.0f, 0.0f);
-        glVertex3f(inner_radius * sinf(angle_next), inner_radius * cosf(angle_next) + 0.5f, 0.0f);
-        glColor3f(1.0f, 0.0f, 0.0f);
-        glVertex3f(inner_radius * sinf(angle), inner_radius * cosf(angle) + 0.5f, 0.0f);
-        glColor3f(1.0f, 0.0f, 0.0f);
-        glVertex3f(radius * sinf(angle_next), radius * cosf(angle_next) + 0.5f, 0.0f);
-	}
-    // green
-    for (int i = 0; i < n; i++) {
-        if (i > n * 1 / 12 && i < n * 3 /12) continue;
-        float angle = i / (float)n * pi * 2;
-        float angle_next = (i + 1) / (float)n * pi * 2;
-        //glVertex3f(0.0f, 0.0f, 0.0f);
-        glColor3f(0.0f, 1.0f, 0.0f);
-        glVertex3f(radius * sinf(angle) - 0.3f, radius * cosf(angle), 0.0f);
-        glColor3f(0.0f, 1.0f, 0.0f);
-        glVertex3f(radius * sinf(angle_next) - 0.3f, radius * cosf(angle_next), 0.0f);
-        glColor3f(0.0f, 1.0f, 0.0f);
-        glVertex3f(inner_radius * sinf(angle) - 0.3f, inner_radius * cosf(angle), 0.0f);
-        glColor3f(0.0f, 1.0f, 0.0f);
-        glVertex3f(inner_radius * sinf(angle_next) - 0.3f, inner_radius * cosf(angle_next), 0.0f);
-        glColor3f(0.0f, 1.0f, 0.0f);
-        glVertex3f(inner_radius * sinf(angle) - 0.3f, inner_radius * cosf(angle), 0.0f);
-        glColor3f(0.0f, 1.0f, 0.0f);
-        glVertex3f(radius * sinf(angle_next) - 0.3f, radius * cosf(angle_next), 0.0f);
-    }
-    // blue
-    // green
-    for (int i = 0; i < n; i++) {
-        if (i < n * 1 / 12 || i > n * 11 / 12) continue;
-        float angle = i / (float)n * pi * 2;
-        float angle_next = (i + 1) / (float)n * pi * 2;
-        //glVertex3f(0.0f, 0.0f, 0.0f);
-        glColor3f(0.0f, 0.0f, 1.0f);
-        glVertex3f(radius * sinf(angle) + 0.3f, radius * cosf(angle), 0.0f);
-        glColor3f(0.0f, 0.0f, 1.0f);
-        glVertex3f(radius * sinf(angle_next) + 0.3f, radius * cosf(angle_next), 0.0f);
-        glColor3f(0.0f, 0.0f, 1.0f);
-        glVertex3f(inner_radius * sinf(angle) + 0.3f, inner_radius * cosf(angle), 0.0f);
-        glColor3f(0.0f, 0.0f, 1.0f);
-        glVertex3f(inner_radius * sinf(angle_next) + 0.3f, inner_radius * cosf(angle_next), 0.0f);
-        glColor3f(0.0f, 0.0f, 1.0f);
-        glVertex3f(inner_radius * sinf(angle) + 0.3f, inner_radius * cosf(angle), 0.0f);
-        glColor3f(0.0f, 0.0f, 1.0f);
-        glVertex3f(radius * sinf(angle_next) + 0.3f, radius * cosf(angle_next), 0.0f);
-    }
-    //glVertex3f(0.0f, 0.0f, 0.0f);
-    CHECK_GL(glEnd());
-}
+#include "Game.hpp"
 
 int main() {
+    // Initalize GLFW library
     if (!glfwInit()) {
         const char *errmsg;
         glfwGetError(&errmsg);
@@ -108,9 +12,10 @@ int main() {
         return -1;
     }
 
-    // hint the version required: OpenGL 2.0
+    // Hint the version required: OpenGL 2.0
     constexpr int version = 20;
-    glfwWindowHint(GLFW_OPENGL_API, GLFW_OPENGL_API);
+    glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_API);
+    glfwWindowHint(GLFW_CONTEXT_CREATION_API, GLFW_NATIVE_CONTEXT_API);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, version / 10);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, version % 10);
     if (version >= 33) {
@@ -120,57 +25,80 @@ int main() {
 #endif
     }
 
-    // Create window
-    GLFWwindow *window = glfwCreateWindow(640, 640, "Example", NULL, NULL);
+    // enable 4x MSAA
+    glfwWindowHint(GLFW_SAMPLES, 4);
+
+    // Enable transparent framebuffer
+    constexpr bool transparent = false;
+    if (transparent) {
+        glfwWindowHint(GLFW_TRANSPARENT_FRAMEBUFFER, GLFW_TRUE);
+        glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
+        glfwWindowHint(GLFW_DECORATED, GLFW_FALSE);
+        glfwWindowHint(GLFW_FLOATING, GLFW_TRUE);
+        glfwWindowHint(GLFW_FOCUS_ON_SHOW, GLFW_FALSE);
+        glfwWindowHint(GLFW_FOCUSED, GLFW_FALSE);
+    }
+
+    // Create main window
+    constexpr char title[] = "Example";
+    GLFWwindow *window = glfwCreateWindow(1024, 768, title, NULL, NULL);
+
+    // Test if window creation succeed
     if (!window) {
-        const char *errmsg;
-        glfwGetError(&errmsg);
-        if (!errmsg) errmsg = "(no error)";
-        std::cerr << "GLFW failed to create window: " << errmsg << '\n';
-        std::cerr << "==============================================\n";
-        if (!strcmp(errmsg, "X11: The DISPLAY environment variable is missing")) {
-            std::cerr << "You seems not running with graphic display\n";
-        } else if (!strcmp(errmsg, "WGL: The driver does not appear to support OpenGL")) {
-            std::cerr << "Please consider install an OpenGL driver, or use the mesa driver\n";
-        } else if (!strcmp(errmsg, "WGL: Failed to create OpenGL context")) {
-            std::cerr << "Your driver seems not supporting the required OpenGL version\n";
-        }
-        std::cerr << "- If you have a physical graphic card (e.g. NVIDIA), install it from your graphic card vendor official website: http://www.nvidia.com/Download/index.aspx\n";
-        std::cerr << "- If you are using Windows, download opengl32.dll from https://pan.baidu.com/s/1TZ6nVJC7DZIuUarZrGJYow?pwd=opgl and place it into the same directory as this executable file (alternatively you may download opengl32sw.dll from Internet and rename it to opengl32.dll to place into the same directory as this executable file)\n";
-        std::cerr << "- If you are using Linux or WSL1, install the mesa driver: https://ubuntuhandbook.org/index.php/2021/07/install-latest-mesa-ubuntu-20-04-21-04/";
-        std::cerr << "- If you use WSL2, install WSLg: https://learn.microsoft.com/zh-cn/windows/wsl/tutorials/gui-apps\n";
-        std::cerr << "- If you are using SSH remote server, try connect it using ssh -X <ip address>\n";
-        std::cerr << "- If you are using MacOS, you probably want to use Windows or Linux instead for better OpenGL support\n";
-        std::cerr << "- If you are using a Laptop with dual-cards, make sure you have switch to dedicated card (NVIDIA) instead of the integrated card (Intel)\n";
-        std::cerr << "==============================================\n";
-#ifdef _WIN32
-        std::system("pause");
-#endif
+        check_gl::opengl_show_glfw_error_diagnose();
         glfwTerminate();
         return -1;
     }
     glfwMakeContextCurrent(window);
 
-    // Load glXXX function pointers
+    // Switch to fullscreen mode
+    constexpr bool fullscreen = false;
+    if (fullscreen) {
+        GLFWmonitor *monitor = glfwGetPrimaryMonitor();
+        if (monitor) {
+            const GLFWvidmode *mode = glfwGetVideoMode(monitor);
+            if (mode) {
+                glfwSetWindowSize(window, mode->width, mode->height);
+                glfwSetWindowMonitor(window, monitor, 0, 0, mode->width, mode->height, mode->refreshRate);
+                std::cerr << "Entered fullscreen mode: " << mode->width << 'x' << mode->height
+                    << " at " << mode->refreshRate << " Hz\n";
+            }
+        }
+    } else {
+        GLFWmonitor *monitor = glfwGetPrimaryMonitor();
+        if (monitor) {
+            const GLFWvidmode *mode = glfwGetVideoMode(monitor);
+            if (mode) {
+                int width, height;
+                glfwGetWindowSize(window, &width, &height);
+                glfwSetWindowPos(window, (mode->width - width) / 2, (mode->height - height) / 2);
+            }
+        }
+    }
+
+    // Load glXXX function pointers (only after this you may use OpenGL functions)
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
         glfwTerminate();
         std::cerr << "GLAD failed to load GL functions\n";
         return -1;
     }
-    std::cerr << "OpenGL version: " << glGetString(GL_VERSION) << '\n';
+    check_gl::opengl_try_enable_debug_message();
 
-    CHECK_GL(glEnable(GL_POINT_SMOOTH));
-    CHECK_GL(glEnable(GL_BLEND));
-    CHECK_GL(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
-    CHECK_GL(glPointSize(64.0f));
+    // Print diagnostic information
+    std::cerr << "OpenGL version: " << (const char *)glGetString(GL_VERSION) << '\n';
 
-    // start main game loop
+    // Create game instance
+    auto &game = Game::get();
+    game.set_window(window);
+
+    // Initialize data structures
+    game.initialize();
+    // Start main game loop
     while (!glfwWindowShouldClose(window)) {
         // render graphics
         CHECK_GL(glClear(GL_COLOR_BUFFER_BIT));
         render();
         // refresh screen
-        // orgin    is     glFlush()
         glfwSwapBuffers(window);
         glfwPollEvents();
     }

@@ -2,6 +2,85 @@
 #include <iostream>
 #include "Game.hpp"
 
+static void render() {
+    glBegin(GL_TRIANGLES);
+    constexpr int n = 200;
+    constexpr float pi = 3.141592653589f;
+    float radius = 0.3f;
+    float inner_radius = 0.12f;
+    glColor3f(1.0f, 0.0f, 0.0f);
+    float shiftY = 1 / std::sqrtf(3.0f) * 0.7;
+    for (int i = 0; i < n; i++) {
+        if (i<n * 5 / 12 || i>n * 7 / 12)
+        {
+            float angle = i / (float)n * pi *
+                2;
+            float angle_next = (i + 1) /
+                (float)n * pi * 2;
+            glVertex3f(inner_radius *
+                sinf(angle), inner_radius * cosf(angle) + shiftY, 0.0f);
+            glVertex3f(radius * sinf(angle),
+                radius * cosf(angle) + shiftY, 0.0f);
+            glVertex3f(radius *
+                sinf(angle_next), radius * cosf(angle_next) + shiftY, 0.0f);
+            glVertex3f(inner_radius *
+                sinf(angle), inner_radius * cosf(angle) + shiftY, 0.0f);
+            glVertex3f(inner_radius *
+                sinf(angle_next), inner_radius * cosf(angle_next) + shiftY, 0.0f);
+            glVertex3f(radius *
+                sinf(angle_next), radius * cosf(angle_next) + shiftY, 0.0f);
+        }
+    }
+    glColor3f(0.0f, 1.0f, 0.0f);
+    shiftY = -0.5f / std::sqrtf(3.0f) * 0.7;
+    float shiftX = -0.5 * 0.7;
+    for (int i = 0; i < n; i++) {
+        if (i<n * 1 / 12 || i>n * 3 / 12)
+        {
+            float angle = i / (float)n * pi *
+                2;
+            float angle_next = (i + 1) /
+                (float)n * pi * 2;
+            glVertex3f(inner_radius *
+                sinf(angle) + shiftX, inner_radius * cosf(angle) + shiftY, 0.0f);
+            glVertex3f(radius * sinf(angle) +
+                shiftX, radius * cosf(angle) + shiftY, 0.0f);
+            glVertex3f(radius *
+                sinf(angle_next) + shiftX, radius * cosf(angle_next) + shiftY, 0.0f);
+            glVertex3f(inner_radius *
+                sinf(angle) + shiftX, inner_radius * cosf(angle) + shiftY, 0.0f);
+            glVertex3f(inner_radius *
+                sinf(angle_next) + shiftX, inner_radius * cosf(angle_next) + shiftY, 0.0f);
+            glVertex3f(radius *
+                sinf(angle_next) + shiftX, radius * cosf(angle_next) + shiftY, 0.0f);
+        }
+    }
+    glColor3f(0.0f, 0.0f, 1.0f);
+    shiftY = -0.5f / std::sqrtf(3.0f) * 0.7;
+    shiftX = 0.5 * 0.7;
+    for (int i = 0; i < n; i++) {
+        if (i > n * 1 / 12 && i < n
+            * 11 / 12) {
+            float angle = i / (float)n * pi *
+                2;
+            float angle_next = (i + 1) /
+                (float)n * pi * 2;
+            glVertex3f(inner_radius *
+                sinf(angle) + shiftX, inner_radius * cosf(angle) + shiftY, 0.0f);
+            glVertex3f(radius * sinf(angle) +
+                shiftX, radius * cosf(angle) + shiftY, 0.0f);
+            glVertex3f(radius *
+                sinf(angle_next) + shiftX, radius * cosf(angle_next) + shiftY, 0.0f);
+            glVertex3f(inner_radius *
+                sinf(angle) + shiftX, inner_radius * cosf(angle) + shiftY, 0.0f);
+            glVertex3f(inner_radius *
+                sinf(angle_next) + shiftX, inner_radius * cosf(angle_next) + shiftY, 0.0f);
+            glVertex3f(radius *
+                sinf(angle_next) + shiftX, radius * cosf(angle_next) + shiftY, 0.0f);
+        }
+    }
+    CHECK_GL(glEnd());
+}
 int main() {
     // Initalize GLFW library
     if (!glfwInit()) {
@@ -41,8 +120,7 @@ int main() {
 
     // Create main window
     constexpr char title[] = "Example";
-    GLFWwindow *window = glfwCreateWindow(1024, 768, title, NULL, NULL);
-
+    GLFWwindow *window = glfwCreateWindow(640, 640, title, NULL, NULL);
     // Test if window creation succeed
     if (!window) {
         check_gl::opengl_show_glfw_error_diagnose();
@@ -87,16 +165,18 @@ int main() {
     // Print diagnostic information
     std::cerr << "OpenGL version: " << (const char *)glGetString(GL_VERSION) << '\n';
 
-    // Create game instance
-    auto &game = Game::get();
-    game.set_window(window);
+    //// Create game instance
+    //auto &game = Game::get();
+    //game.set_window(window);
 
-    // Initialize data structures
-    game.initialize();
+    //// Initialize data structures
+    //game.initialize();
     // Start main game loop
     while (!glfwWindowShouldClose(window)) {
+        CHECK_GL(glClear(GL_COLOR_BUFFER_BIT));
+        render();
         // Render graphics
-        game.render();
+        //game.render();
         // Update screen
         glfwSwapBuffers(window);
         glfwPollEvents();

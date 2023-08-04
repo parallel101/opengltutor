@@ -95,9 +95,10 @@ int main() {
     game.initialize();
     // Start main game loop
     while (!glfwWindowShouldClose(window)) {
-        // Render graphics
-        game.render();
-        // Update screen
+        // render graphics
+        CHECK_GL(glClear(GL_COLOR_BUFFER_BIT));
+        render();
+        // refresh screen
         glfwSwapBuffers(window);
         glfwPollEvents();
     }

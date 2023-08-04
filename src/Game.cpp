@@ -41,7 +41,7 @@ void Game::initialize() {
     CHECK_GL(glEnable(GL_LIGHTING));
     CHECK_GL(glEnable(GL_LIGHT0));
     CHECK_GL(glEnable(GL_COLOR_MATERIAL));
-    /* CHECK_GL(glEnable(GL_NORMALIZE)); */
+    CHECK_GL(glEnable(GL_NORMALIZE));
     CHECK_GL(glEnable(GL_CULL_FACE));
     CHECK_GL(glCullFace(GL_BACK));
     CHECK_GL(glFrontFace(GL_CCW));

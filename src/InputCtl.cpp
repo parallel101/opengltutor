@@ -25,7 +25,6 @@ static auto glfw_input_callback(FpFn fpFn) {
 }
 
 struct CameraState {
-    /* glm::mat4x4 transformation; */
     glm::vec3 eye = {0, 0, 5};
     glm::vec3 lookat = {0, 0, 0};
     glm::vec3 up_vector = {0, 1, 0};
@@ -85,6 +84,15 @@ struct CameraState {
         // update eye and lookat coordinates
         eye = glm::vec3(transformation * glm::vec4(eye, 1));
         lookat = glm::vec3(transformation * glm::vec4(lookat, 1));
+
+        // try to keep the camera horizontal line correct (eval right axis error)
+        float right_o_up = glm::dot(right_vector, keep_up_axis);
+        float right_handness = glm::dot(glm::cross(keep_up_axis, right_vector), front_vector);
+        float angle_Z_err = glm::asin(right_o_up);
+        angle_Z_err *= glm::atan(right_handness);
+        // rotation for up: cancel out the camera horizontal line drift
+        glm::mat4x4 rotation_matrixZ = glm::rotate(glm::mat4x4(1), angle_Z_err, front_vector);
+        up_vector = glm::mat3x3(rotation_matrixZ) * up_vector;
     }
 
     void zoom(InputCtl::InputPreference const &pref, float delta, bool isHitchcock) {

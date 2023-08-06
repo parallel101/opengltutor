@@ -35,7 +35,7 @@ void Game::initialize() {
     m_private->monkey.load_obj(OPENGLTUTOR_HOME "assets/monkey.obj");
     /* m_private->monkey.load_obj(OPENGLTUTOR_HOME "assets/cube.obj"); */
     CHECK_GL(glEnable(GL_DEPTH_TEST));
-    CHECK_GL(glDisable(GL_MULTISAMPLE));
+    CHECK_GL(glEnable(GL_MULTISAMPLE));
     CHECK_GL(glEnable(GL_BLEND));
     CHECK_GL(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
     CHECK_GL(glEnable(GL_LIGHTING));
@@ -52,6 +52,7 @@ void Game::render() {
     glfwGetWindowSize(m_window, &width, &height);
     CHECK_GL(glViewport(0, 0, width, height));
 
+    CHECK_GL(glClearColor(0.1f, 0.05f, 0.1f, 0.0f));
     CHECK_GL(glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT));
 
     auto projection = m_inputCtl.get_projection_matrix();
@@ -65,13 +66,7 @@ void Game::render() {
 
     glColor3f(0.9f, 0.6f, 0.1f);
 
-    /* CHECK_GL(glMatrixMode(GL_MODELVIEW)); */
-    /* model = glm::translate(glm::mat4x4(1), glm::vec3(0.8f, 0, 0)) * model; */
-    /* CHECK_GL(glLoadMatrixf(glm::value_ptr(view * model))); */
-    /* m_private->monkey.draw_obj(true); */
-    
     CHECK_GL(glMatrixMode(GL_MODELVIEW));
-    /* model = glm::translate(glm::mat4x4(1), -2.0f * glm::vec3(0.8f, 0, 0)) * model; */
     CHECK_GL(glLoadMatrixf(glm::value_ptr(view * model)));
     m_private->monkey.draw_obj(true);
 }

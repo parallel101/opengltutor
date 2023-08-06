@@ -85,15 +85,6 @@ struct CameraState {
         // update eye and lookat coordinates
         eye = glm::vec3(transformation * glm::vec4(eye, 1));
         lookat = glm::vec3(transformation * glm::vec4(lookat, 1));
-
-        // try to keep the camera horizontal line correct (eval right axis error)
-        float right_o_up = glm::dot(right_vector, keep_up_axis);
-        float right_handness = glm::dot(glm::cross(keep_up_axis, right_vector), front_vector);
-        float angle_Z_err = glm::asin(right_o_up);
-        angle_Z_err *= glm::atan(right_handness);
-        // rotation for up: cancel out the camera horizontal line drift
-        glm::mat4x4 rotation_matrixZ = glm::rotate(glm::mat4x4(1), angle_Z_err, front_vector);
-        up_vector = glm::mat3x3(rotation_matrixZ) * up_vector;
     }
 
     void zoom(InputCtl::InputPreference const &pref, float delta, bool isHitchcock) {
@@ -180,14 +171,14 @@ void InputCtl::cursor_pos_callback(double xpos, double ypos) {
     }
     m_private->lastpos = pos;
 
-    if (m_inputPref.clamp_cursor && !m_private->curclamped && xpos >= width || ypos >= height || xpos <= 0 || ypos <= 0) {
+    if (m_inputPref.clamp_cursor && !m_private->curclamped && (xpos >= width - 1 || ypos >= height - 1 || xpos <= 1 || ypos <= 1)) {
         // clamp mouse cursor inside the window (ZHI JING Blender)
-        xpos = std::fmod(xpos + width, width);
-        ypos = std::fmod(ypos + height, height);
+        xpos = std::fmod(xpos + width - 3, width - 2) + 1;
+        ypos = std::fmod(ypos + height - 3, height - 2) + 1;
         glfwSetCursorPos(m_private->window, xpos, ypos);
-        m_private->curclamped = true;
+        /* m_private->curclamped = true; */
     } else {
-        m_private->curclamped = false;
+        /* m_private->curclamped = false; */
     }
 }
 

@@ -87,6 +87,9 @@ int main() {
     // Print diagnostic information
     std::cerr << "OpenGL version: " << (const char *)glGetString(GL_VERSION) << '\n';
 
+    // Enable V-Sync
+    glfwSwapInterval(1);
+
     // Create game instance
     auto &game = Game::get();
     game.set_window(window);

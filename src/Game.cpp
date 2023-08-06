@@ -63,21 +63,15 @@ void Game::render() {
     
     glm::mat4x4 model(1.0f);
 
-    static float angle = 0.0f;
-    model = glm::translate(model, glm::vec3(0.0f, 0.12f * glm::sin(glm::radians(angle) * 2.718f), 0.0f));
-    model = glm::rotate(model, glm::radians(angle), glm::vec3(0.0f, 1.0f, 0.0f));
-    model = glm::scale(model, glm::vec3(0.7f));
-    angle += 0.5f;
-
     glColor3f(0.9f, 0.6f, 0.1f);
 
-    CHECK_GL(glMatrixMode(GL_MODELVIEW));
-    model = glm::translate(glm::mat4x4(1), glm::vec3(0.8f, 0, 0)) * model;
-    CHECK_GL(glLoadMatrixf(glm::value_ptr(view * model)));
-    m_private->monkey.draw_obj(true);
+    /* CHECK_GL(glMatrixMode(GL_MODELVIEW)); */
+    /* model = glm::translate(glm::mat4x4(1), glm::vec3(0.8f, 0, 0)) * model; */
+    /* CHECK_GL(glLoadMatrixf(glm::value_ptr(view * model))); */
+    /* m_private->monkey.draw_obj(true); */
     
     CHECK_GL(glMatrixMode(GL_MODELVIEW));
-    model = glm::translate(glm::mat4x4(1), -2.0f * glm::vec3(0.8f, 0, 0)) * model;
+    /* model = glm::translate(glm::mat4x4(1), -2.0f * glm::vec3(0.8f, 0, 0)) * model; */
     CHECK_GL(glLoadMatrixf(glm::value_ptr(view * model)));
-    m_private->monkey.draw_obj(false);
+    m_private->monkey.draw_obj(true);
 }

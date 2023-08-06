@@ -52,7 +52,7 @@ void Game::render() {
     glfwGetWindowSize(m_window, &width, &height);
     CHECK_GL(glViewport(0, 0, width, height));
 
-    CHECK_GL(glClearColor(0.1f, 0.05f, 0.1f, 0.0f));
+    CHECK_GL(glClearColor(0.0f, 0.0f, 0.0f, 0.0f));
     CHECK_GL(glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT));
 
     auto projection = m_inputCtl.get_projection_matrix();

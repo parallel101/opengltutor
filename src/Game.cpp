@@ -59,9 +59,9 @@ void Game::render() {
 
     CHECK_GL(glMatrixMode(GL_PROJECTION));
     CHECK_GL(glLoadMatrixf(glm::value_ptr(projection)));
-    
+
     auto view = m_inputCtl.get_view_matrix();
-    
+
     glm::mat4x4 model(1.0f);
 
     glColor3f(0.9f, 0.6f, 0.1f);

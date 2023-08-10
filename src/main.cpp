@@ -1,3 +1,4 @@
+#pragma execution_character_set("utf-8")  
 #include <glm/glm.hpp>
 #include <glm/ext.hpp>
 #include "check_gl.hpp" // includes glad/glad.h

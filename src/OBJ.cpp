@@ -6,7 +6,7 @@
 #include <fstream>
 #include <sstream>
 
-void OBJ::load_obj(std::string path) {
+void OBJ::load_obj(std::string path, const glm::mat4& model) {
     std::ifstream file(path);
     if (!file.is_open()) {
         std::cerr << "Failed to open file: " << path << '\n';
@@ -19,6 +19,8 @@ void OBJ::load_obj(std::string path) {
             std::istringstream s(line.substr(2));
             glm::vec3 vertex;
             s >> vertex.x >> vertex.y >> vertex.z;
+
+            vertex = model * glm::vec4(vertex, 1.0f);
             vertices.push_back(vertex);
 
         } else if (line.substr(0, 2) == "f ") {
@@ -64,7 +66,7 @@ static glm::vec3 compute_normal_biased(glm::vec3 a, glm::vec3 b, glm::vec3 c) {
     return n;
 }
 
-void OBJ::draw_obj(bool isFlat) {
+void OBJ::draw_obj(bool isFlat, const glm::vec3& color) {
     CHECK_GL(glShadeModel(isFlat ? GL_FLAT : GL_SMOOTH));
 
     std::vector<glm::vec3> normals;
@@ -94,6 +96,7 @@ void OBJ::draw_obj(bool isFlat) {
             glVertex3fv(glm::value_ptr(a));
             glVertex3fv(glm::value_ptr(b));
             glVertex3fv(glm::value_ptr(c));
+       
         } else {
             auto const &an = normals[face[0]];
             auto const &bn = normals[face[1]];
@@ -105,6 +108,8 @@ void OBJ::draw_obj(bool isFlat) {
             glNormal3fv(glm::value_ptr(cn));
             glVertex3fv(glm::value_ptr(c));
         }
+
+        glColor3f(color[0], color[1], color[2]);
     }
     CHECK_GL(glEnd());
 }

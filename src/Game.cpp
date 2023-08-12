@@ -8,7 +8,9 @@ struct Game::Private { // P-IMPL pattern
     glm::mat4x4 viewMat;
     glm::mat4x4 projMat;
 
-    OBJ monkey;
+    OBJ redOpenCV;
+    OBJ greenOpenCV;
+    OBJ blueOpenCV;
 };
 
 Game::Game() : m_private(std::make_unique<Private>()) {}
@@ -31,8 +33,29 @@ void Game::set_window(GLFWwindow *window) {
 #endif
 
 void Game::initialize() {
-    /* m_private->monkey.load_obj(OPENGLTUTOR_HOME "assets/opencvpart.obj"); */
-    m_private->monkey.load_obj(OPENGLTUTOR_HOME "assets/monkey.obj");
+
+    glm::mat4 model(1.0f);
+ 
+    model = glm::translate(model, glm::vec3{ 0.0f, 1.0f, 0.0f });
+    model = glm::rotate(model, glm::radians(150.0f), glm::vec3{ 0.0f, 0.0f, 1.0f });
+    model = glm::rotate(model, glm::radians(90.0f), glm::vec3{ 1.0f, 0.0f, 0.0f });
+
+    m_private->redOpenCV.load_obj(OPENGLTUTOR_HOME "assets/opencvpart.obj", model);
+
+    model = glm::mat4(1.0f);
+    model = glm::translate(model, glm::vec3{ -1.0f, -1.0f, 0.0f });
+    model = glm::rotate(model, glm::radians(-90.0f), glm::vec3{ 0.0f, 0.0f, 1.0f });
+    model = glm::rotate(model, glm::radians(90.0f), glm::vec3{ 1.0f, 0.0f, 0.0f });
+
+    m_private->greenOpenCV.load_obj(OPENGLTUTOR_HOME "assets/opencvpart.obj", model);
+
+    model = glm::mat4(1.0f);
+    model = glm::translate(model, glm::vec3{ 1.0f, -1.0f, 0.0f });
+    model = glm::rotate(model, glm::radians(-30.0f), glm::vec3{ 0.0f, 0.0f, 1.0f });
+    model = glm::rotate(model, glm::radians(90.0f), glm::vec3{ 1.0f, 0.0f, 0.0f });
+
+    m_private->blueOpenCV.load_obj(OPENGLTUTOR_HOME "assets/opencvpart.obj", model);
+    // m_private->monkey.load_obj(OPENGLTUTOR_HOME "assets/monkey.obj");
     /* m_private->monkey.load_obj(OPENGLTUTOR_HOME "assets/cube.obj"); */
     CHECK_GL(glEnable(GL_DEPTH_TEST));
     CHECK_GL(glEnable(GL_MULTISAMPLE));
@@ -68,5 +91,7 @@ void Game::render() {
 
     CHECK_GL(glMatrixMode(GL_MODELVIEW));
     CHECK_GL(glLoadMatrixf(glm::value_ptr(view * model)));
-    m_private->monkey.draw_obj(true);
+    m_private->redOpenCV.draw_obj(true, glm::vec3(1.0f, 0.0f, 0.0f));
+    m_private->greenOpenCV.draw_obj(true, glm::vec3(0.0f, 1.0f, 0.0f));
+    m_private->blueOpenCV.draw_obj(true, glm::vec3(0.0f, 0.0f, 1.0f));
 }

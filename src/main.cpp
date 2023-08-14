@@ -6,6 +6,91 @@
 #include <iostream>
 #include <cstring>
 #include <cstdlib>
+#include <cmath>
+
+static void render_bkg() {
+    glBegin(GL_TRIANGLES);
+    glColor3f(0.0f, 0.0f, 0.0f);
+    glVertex3f(-1.0f, 1.0f, 0.0f);
+    glVertex3f(0.0f, 1.0f, 0.0f);
+    glVertex3f(-1.0f, -1.0f, 0.0f);
+    glVertex3f(0.0f, 1.0f, 0.0f);
+    glVertex3f(0.0, -1.0f, 0.0f);
+    glVertex3f(-1.0f, -1.0f, 0.0f);
+    glColor3f(1.0f, 1.0f, 1.0f);
+    glVertex3f(0.0f, 1.0f, 0.0f);
+    glVertex3f(0.0f, -1.0f, 0.0f);
+    glVertex3f(1.0f, 1.0f, 0.0f);
+    glVertex3f(1.0f, -1.0f, 0.0f);
+    glVertex3f(0.0f, -1.0f, 0.0f);
+    glVertex3f(1.0f, 1.0f, 0.0f);
+    CHECK_GL(glEnd());
+}
+
+static void render_half_circle() {
+    constexpr size_t n = 200;
+    constexpr float pi = 3.1415926535897f;
+    float radius = 1.0;
+    glBegin(GL_TRIANGLES);
+    glColor3f(0.f, 0.f, 0.f);
+    for (size_t i = 0; i < n / 2; i++) {
+        float angle = i / (float)n * 2 * pi;
+        float next_angle = (i + 1) / (float)n * 2 * pi;
+        glVertex3f(std::sin(angle), std::cos(angle), 0.f);
+        glVertex3f(std::sin(next_angle), std::cos(next_angle), 0.f);
+        glVertex3f(0.f, 0.f, 0.f);
+    }
+    glColor3f(1.0f, 1.0f, 1.0f);
+    for (size_t i = n / 2; i < n; i++) {
+        float angle = i / (float)n * 2 * pi;
+        float next_angle = (i + 1) / (float)n * 2 * pi;
+        glVertex3f(std::sin(angle), std::cos(angle), 0.f);
+        glVertex3f(std::sin(next_angle), std::cos(next_angle), 0.f);
+        glVertex3f(0.f, 0.f, 0.f);
+    }
+    glColor3f(1.f, 1.f, 1.f);
+    radius = 0.5f;
+    for (size_t i = 0; i < n / 2; i++) {
+        float angle = i / (float)n * 2 * pi;
+        float next_angle = (i + 1) / (float)n * 2 * pi;
+        glVertex3f(radius * std::sin(angle), radius + radius * std::cos(angle), 0.f);
+        glVertex3f(radius * std::sin(next_angle), radius + radius * std::cos(next_angle), 0.f);
+        glVertex3f(0.f, radius, 0.f);
+    }
+    glColor3f(0.0f, 0.0f, 0.0f);
+    for (size_t i = n / 2; i < n; i++) {
+        float angle = i / (float)n * 2 * pi;
+        float next_angle = (i + 1) / (float)n * 2 * pi;
+        glVertex3f(radius * std::sin(angle), -1 * radius + radius * std::cos(angle), 0.f);
+        glVertex3f(radius * std::sin(next_angle), -1 * radius + radius * std::cos(next_angle), 0.f);
+        glVertex3f(0.f, -1 * radius, 0.f);
+    }
+    CHECK_GL(glEnd());
+}
+
+static void render_inner_circle() {
+    constexpr float radius = 0.2f;
+    constexpr size_t n = 200;
+    constexpr float pi = 3.1415926535897f;
+    glBegin(GL_TRIANGLES);
+    glColor3f(0.f, 0.f, 0.f);
+    for (size_t i = 0; i < n; i++) {
+        float angle = i / (float)n * pi * 2;
+        float next_angle = (i + 1) / (float)n * pi * 2;
+        glVertex3f(radius * std::sin(angle), 0.5f + radius * std::cos(angle), 0.f);
+        glVertex3f(radius * std::sin(next_angle), 0.5f + radius * std::cos(next_angle), 0.f);
+        glVertex3f(0.f, 0.5f, 0.f);
+    }
+    glColor3f(1.f, 1.f, 1.f);
+    for (size_t i = 0; i < n; i++) {
+        float angle = i / (float)n * pi * 2;
+        float next_angle = (i + 1) / (float)n * pi * 2;
+        glVertex3f(radius * std::sin(angle), -0.5f + radius * std::cos(angle), 0.f);
+        glVertex3f(radius * std::sin(next_angle), -0.5f + radius * std::cos(next_angle), 0.f);
+        glVertex3f(0.f, -0.5f, 0.f);
+    }
+    CHECK_GL(glEnd());
+}
 
 static void render() {
     glBegin(GL_TRIANGLES);
@@ -108,7 +193,9 @@ int main() {
     while (!glfwWindowShouldClose(window)) {
         // render graphics
         CHECK_GL(glClear(GL_COLOR_BUFFER_BIT));
-        render();
+        render_bkg();
+        render_half_circle();
+        render_inner_circle();
         // refresh screen
         glfwSwapBuffers(window);
         glfwPollEvents();

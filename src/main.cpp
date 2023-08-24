@@ -50,14 +50,35 @@ static void render() {
     float radius = 0.3f;
     float inner_radius = 0.12f;
     float x = 0, y = 0;
-    int clear_start = 0, clear_end = 0;
+    //int clear_start = 0, clear_end = 0;
+    //glm::vec2 start = glm::vec2(0, n / 2);
+    //glm::vec2 end = glm::vec2(n / 2, n);
+    //float start[2] = { 0, n / 2 }, end[2] = { n / 2, n };
+    float start = 0, end = 0;
+
+    static float bound = 0;
+    bound++;
+    if (bound > n)
+        bound -= n;
+
     for (int count = 0; count < 3; count++) {
-        switch (count) {
+        /*switch (count) {
             case 0: x =  0.0f                                , y =  0.4f                                , clear_start = 150.0f / 360.0f * n, clear_end = 210.0f / 360.0f * n; break;
             case 1: x = -0.4f * cosf(30.0f / 360.0f * 2 * pi), y = -0.4f * sinf(30.0f / 360.0f * 2 * pi), clear_start = 30.0f / 360.0f * n , clear_end = 90.0f / 360.0f * n; break;
             case 2: x =  0.4f * cosf(30.0f / 360.0f * 2 * pi), y = -0.4f * sinf(30.0f / 360.0f * 2 * pi), clear_start = 330.0f / 360.0f * n, clear_end = 30.0f / 360.0f * n; break;
+        }*/
+        /*switch (count) {
+            case 0: x =  0.0f                                , y =  0.4f                                , end.x = 150.0f / 360.0f * n, end.y = 360.0f / 360.0f * n, start.x = 0.0f / 360.0f * n , start.y = 210.0f / 360.0f * n; break;
+            case 1: x = -0.4f * cosf(30.0f / 360.0f * 2 * pi), y = -0.4f * sinf(30.0f / 360.0f * 2 * pi), end.x = 30.0f / 360.0f * n , end.y = 360.0f / 360.0f * n, start.x = 0.0f / 360.0f * n , start.y = 90.0f / 360.0f * n; break;
+            case 2: x =  0.4f * cosf(30.0f / 360.0f * 2 * pi), y = -0.4f * sinf(30.0f / 360.0f * 2 * pi), end.x = 180.0f / 360.0f * n, end.y = 330.0f / 360.0f * n, start.x = 30.0f / 360.0f * n, start.y = 180.0f / 360.0f * n; break;
+        }*/
+        switch (count) {
+            case 0: x =  0.0f                                , y =  0.4f                                , end = 150.0f / 360.0f * n, start = 210.0f / 360.0f * n; break;
+            case 1: x = -0.4f * cosf(30.0f / 360.0f * 2 * pi), y = -0.4f * sinf(30.0f / 360.0f * 2 * pi), end = 30.0f / 360.0f * n, start = 90.0f / 360.0f * n; break;
+            case 2: x =  0.4f * cosf(30.0f / 360.0f * 2 * pi), y = -0.4f * sinf(30.0f / 360.0f * 2 * pi), end = 330.0f / 360.0f * n, start = 30.0f / 360.0f * n; break;
         }
-        for (int i = 0; i < n; i++) {
+
+        for (float i = start; i < bound; i++) {
             float angle = i / (float)n * pi * 2;
             float angle_next = (i + 1) / (float)n * pi * 2;
 
@@ -67,15 +88,18 @@ static void render() {
                 case 2: glColor3f(0.0f, 0.0f, 1.0f); break;
             }
 
-            if ((clear_start <= clear_end) ? (i > clear_start && i < clear_end) : (i > clear_start || i < clear_end))
+            /*if ((start <= end) ? (i > start && i < end) : (i > clear_start || i < clear_end))
+                glColor3f(0.0f, 0.0f, 0.0f);*/
+            if ((start <= end) ? (i < start || i > end) : (i < start && i > end))
                 glColor3f(0.0f, 0.0f, 0.0f);
-                glVertex3f(radius * sinf(angle) + x, radius * cosf(angle) + y, 0.0f);
-                glVertex3f(radius * sinf(angle_next) + x, radius * cosf(angle_next) + y, 0.0f);
-                glVertex3f(inner_radius * sinf(angle) + x, inner_radius * cosf(angle) + y, 0.0f);
 
-                glVertex3f(inner_radius * sinf(angle_next) + x, inner_radius * cosf(angle_next) + y, 0.0f);
-                glVertex3f(inner_radius * sinf(angle) + x, inner_radius * cosf(angle) + y, 0.0f);
-                glVertex3f(radius * sinf(angle_next) + x, radius * cosf(angle_next) + y, 0.0f);
+            glVertex3f(radius * sinf(angle) + x, radius * cosf(angle) + y, 0.0f);
+            glVertex3f(radius * sinf(angle_next) + x, radius * cosf(angle_next) + y, 0.0f);
+            glVertex3f(inner_radius * sinf(angle) + x, inner_radius * cosf(angle) + y, 0.0f);
+
+            glVertex3f(inner_radius * sinf(angle_next) + x, inner_radius * cosf(angle_next) + y, 0.0f);
+            glVertex3f(inner_radius * sinf(angle) + x, inner_radius * cosf(angle) + y, 0.0f);
+            glVertex3f(radius * sinf(angle_next) + x, radius * cosf(angle_next) + y, 0.0f);
         }
     }
 	CHECK_GL(glEnd());

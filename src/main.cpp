@@ -53,9 +53,9 @@ static void render() {
     int clear_start = 0, clear_end = 0;
     for (int count = 0; count < 3; count++) {
         switch (count) {
-            case 0: x =  0.00f                          , y =  0.40f                          , clear_start = n * 150 / 360, clear_end = n * 210 / 360; break;
-            case 1: x = -0.40f * cosf(2 * pi * 30 / 360), y = -0.40f * sinf(2 * pi * 30 / 360), clear_start = n * 30 / 360, clear_end = n * 90 / 360; break;
-            case 2: x =  0.40f * cosf(2 * pi * 30 / 360), y = -0.40f * sinf(2 * pi * 30 / 360), clear_start = n * 330 / 360, clear_end = n * 30 / 360; break;
+            case 0: x =  0.0f                                , y =  0.4f                                , clear_start = 150.0f / 360.0f * n, clear_end = 210.0f / 360.0f * n; break;
+            case 1: x = -0.4f * cosf(30.0f / 360.0f * 2 * pi), y = -0.4f * sinf(30.0f / 360.0f * 2 * pi), clear_start = 30.0f / 360.0f * n , clear_end = 90.0f / 360.0f * n; break;
+            case 2: x =  0.4f * cosf(30.0f / 360.0f * 2 * pi), y = -0.4f * sinf(30.0f / 360.0f * 2 * pi), clear_start = 330.0f / 360.0f * n, clear_end = 30.0f / 360.0f * n; break;
         }
         for (int i = 0; i < n; i++) {
             float angle = i / (float)n * pi * 2;

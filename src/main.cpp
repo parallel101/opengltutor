@@ -8,6 +8,7 @@
 #include <cstdlib>
 //using namespace std;
 
+//参数：颜色，圆心坐标，起始，结束
 static void render(float r, float g, float b, float x, float y, float start, float end) {
     glBegin(GL_TRIANGLES);
     constexpr int n = 1000;
@@ -142,7 +143,7 @@ int main() {
     while (!glfwWindowShouldClose(window)) {
         // render graphics
         CHECK_GL(glClear(GL_COLOR_BUFFER_BIT));
-        //render_round();//画圆
+        render_round();//画圆
         render(1.0f, 0.0f, 0.0f, 0.0f, 0.4f, (float)7 / 12, (float)17 / 12);
         render(0.0f, 1.0f, 0.0f, -0.46f, -0.4f, 0.25f, (float)13 / 12);
         render(0.0f, 0.0f, 1.0f, 0.46f, -0.4f, (float)1/12, (float)11/12);

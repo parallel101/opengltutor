@@ -122,7 +122,6 @@ struct CameraState {
 
 struct InputCtl::Private { // P-IMPL pattern
     glm::vec2 lastpos;
-    bool curclamped = false;
     bool moving = false;
     CameraState camState;
     InputPreference camCtlPref;
@@ -179,14 +178,11 @@ void InputCtl::cursor_pos_callback(double xpos, double ypos) {
     }
     m_private->lastpos = pos;
 
-    if (m_inputPref.clamp_cursor && !m_private->curclamped && (xpos >= width - 1 || ypos >= height - 1 || xpos <= 1 || ypos <= 1)) {
+    if (m_private->moving && m_inputPref.clamp_cursor && (xpos >= width - 1 || ypos >= height - 1 || xpos <= 1 || ypos <= 1)) {
         // clamp mouse cursor inside the window (ZHI JING Blender)
         xpos = std::fmod(xpos + width - 3, width - 2) + 1;
         ypos = std::fmod(ypos + height - 3, height - 2) + 1;
         glfwSetCursorPos(m_private->window, xpos, ypos);
-        /* m_private->curclamped = true; */
-    } else {
-        /* m_private->curclamped = false; */
     }
 }
 

@@ -38,27 +38,27 @@ void OBJ::load_obj(std::string path) {
     }
 
     file.close();
-    std::cout << "Loaded " << vertices.size() << " vertices, " << faces.size() << " faces.\n";
+    std::cout << path << ": Loaded " << vertices.size() << " vertices, " << faces.size() << " faces.\n";
 }
 
-static glm::vec3 perspective_divide(glm::vec4 pos) {
-    return glm::vec3(pos.x / pos.w, pos.y / pos.w, pos.z / pos.w);
-}
+/* static glm::vec3 perspective_divide(glm::vec4 pos) { */
+/*     return glm::vec3(pos.x / pos.w, pos.y / pos.w, pos.z / pos.w); */
+/* } */
 
 static glm::vec3 compute_normal(glm::vec3 a, glm::vec3 b, glm::vec3 c) {
-    // jisuan sanjiaoxin faxian
+    // 计算三角形法线
     glm::vec3 ab = b - a;
     glm::vec3 ac = c - a;
     return glm::normalize(glm::cross(ab, ac));
 }
 
 static glm::vec3 compute_normal_biased(glm::vec3 a, glm::vec3 b, glm::vec3 c) {
-    // jisuan sanjiaoxin faxian, with asin factor
+    // 计算三角形法线，带asin项加权的版本
     glm::vec3 ab = b - a;
     glm::vec3 ac = c - a;
     glm::vec3 n = glm::cross(ab, ac);
     auto nlen = glm::length(n);
-    if (nlen) {
+    if (nlen != 0) [[likely]] {
         n *= glm::asin(nlen / (glm::length(ab) * glm::length(ac))) / nlen;
     }
     return n;
@@ -74,9 +74,10 @@ void OBJ::draw_obj(bool isFlat) {
             auto const &a = vertices.at(face[0]);
             auto const &b = vertices.at(face[1]);
             auto const &c = vertices.at(face[2]);
-            for (size_t i = 0; i < 3; i++) {
-                normals[face[i]] += compute_normal_biased(a, b, c);
-            }
+            // 感谢 @gaoxinge 在 #46 中指出问题
+            normals[face[0]] += compute_normal_biased(a, b, c); 
+            normals[face[1]] += compute_normal_biased(b, c, a); 
+            normals[face[2]] += compute_normal_biased(c, a, b);
         }
         for (auto &normal: normals) {
             normal = glm::normalize(normal);

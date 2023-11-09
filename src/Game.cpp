@@ -8,7 +8,7 @@ struct Game::Private { // P-IMPL pattern
     glm::mat4x4 viewMat;
     glm::mat4x4 projMat;
 
-    OBJ monkey;
+    OBJ obj;
 };
 
 Game::Game() : m_private(std::make_unique<Private>()) {}
@@ -31,20 +31,30 @@ void Game::set_window(GLFWwindow *window) {
 #endif
 
 void Game::initialize() {
-    /* m_private->monkey.load_obj(OPENGLTUTOR_HOME "assets/opencvpart.obj"); */
-    m_private->monkey.load_obj(OPENGLTUTOR_HOME "assets/monkey.obj");
-    /* m_private->monkey.load_obj(OPENGLTUTOR_HOME "assets/cube.obj"); */
+    m_private->obj.load_obj(OPENGLTUTOR_HOME "assets/sphere.obj");
     CHECK_GL(glEnable(GL_DEPTH_TEST));
     CHECK_GL(glEnable(GL_MULTISAMPLE));
     CHECK_GL(glEnable(GL_BLEND));
     CHECK_GL(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
-    CHECK_GL(glEnable(GL_LIGHTING));
-    CHECK_GL(glEnable(GL_LIGHT0));
-    CHECK_GL(glEnable(GL_COLOR_MATERIAL));
-    CHECK_GL(glEnable(GL_NORMALIZE));
     CHECK_GL(glEnable(GL_CULL_FACE));
     CHECK_GL(glCullFace(GL_BACK));
     CHECK_GL(glFrontFace(GL_CCW));
+
+    // glm::vec4 lightPos(-1, 1, 1, 0); // 等会用更现代的方式指定光源方向
+
+    unsigned int program = glCreateProgram();
+    unsigned int shader = glCreateShader(GL_FRAGMENT_SHADER);
+    const char *src = R"(#version 330 core
+void main() {
+    gl_FragColor = vec4(1, 0.5, 0, 1);
+}
+)";
+    const char *srcList[1] = {src};
+    int srcLenList[1] = {(int)strlen(src)};
+    glShaderSource(shader, 1, srcList, srcLenList);
+    glAttachShader(program, shader);
+    glLinkProgram(program);
+    glUseProgram(program);
 }
 
 void Game::render() {
@@ -55,18 +65,9 @@ void Game::render() {
     CHECK_GL(glClearColor(0.0f, 0.0f, 0.0f, 0.0f));
     CHECK_GL(glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT));
 
-    auto projection = m_inputCtl.get_projection_matrix();
+    // auto projection = m_inputCtl.get_projection_matrix();
+    // auto view = m_inputCtl.get_view_matrix();
+    // glm::mat4x4 model(1.0f); // 等会用更现代的方式指定这些矩阵
 
-    CHECK_GL(glMatrixMode(GL_PROJECTION));
-    CHECK_GL(glLoadMatrixf(glm::value_ptr(projection)));
-
-    auto view = m_inputCtl.get_view_matrix();
-
-    glm::mat4x4 model(1.0f);
-
-    glColor3f(0.9f, 0.6f, 0.1f);
-
-    CHECK_GL(glMatrixMode(GL_MODELVIEW));
-    CHECK_GL(glLoadMatrixf(glm::value_ptr(view * model)));
-    m_private->monkey.draw_obj(true);
+    m_private->obj.draw_obj(/*isFlat=*/false);
 }

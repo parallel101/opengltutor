@@ -13,4 +13,5 @@ cmake-build-release/
 .clang-format
 # teacher files
 prebuild/
+CMakeKits.json
 .~*

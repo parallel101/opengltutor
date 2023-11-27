@@ -1,9 +1,7 @@
 #include "check_gl.hpp"
 #include "OBJ.hpp"
 #include "Game.hpp"
-#include <stdexcept>
-#include <iostream>
-#include <fstream>
+#include "fileutils.hpp"
 #include <sstream>
 
 void OBJ::load_obj(std::string path) {

@@ -33,12 +33,10 @@ endif()
 if (MSVC)  # 1. fix string literial cannot include unicode characters; 2. rid min and max macros; 3. get back M_PI, M_E macros
     add_compile_options($<$<COMPILE_LANG_AND_ID:CXX,MSVC>:/utf-8$<SEMICOLON>/DNOMINMAX$<SEMICOLON>/D_USE_MATH_DEFINES>)
     add_compile_options($<$<COMPILE_LANG_AND_ID:C,MSVC>:/utf-8$<SEMICOLON>/DNOMINMAX$<SEMICOLON>/D_USE_MATH_DEFINES>)
-elseif (CMAKE_COMPILER_IS_GNUCC)  # Add necessary checks and warnings
+elseif (CMAKE_COMPILER_IS_GNUCXX)  # Add necessary checks and warnings
     if (CMAKE_BUILD_TYPE MATCHES "[Dd][Ee][Bb][Uu][Gg]")
         add_compile_options($<$<COMPILE_LANG_AND_ID:CXX,GNU>:-Wall$<SEMICOLON>-Wextra>)
         add_compile_options($<$<COMPILE_LANG_AND_ID:CXX,GNU>:-ftrapv$<SEMICOLON>-fbounds-check$<SEMICOLON>-fsanitize-trap>)
-        # add_compile_options($<$<COMPILE_LANG_AND_ID:CXX,GNU>:-fsanitize=address$<SEMICOLON>-fsanitize=leak>)
-        # link_libraries(asan)
     endif()
 endif()
 

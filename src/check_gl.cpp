@@ -1,6 +1,9 @@
 #include "check_gl.hpp"
+#include <iomanip>
+#include <map>
 #include <stdexcept>
 #include <iostream>
+#include <sstream>
 #include <cstring>
 #include <cstdlib>
 #include <string>
@@ -130,4 +133,89 @@ void check_gl::opengl_show_glfw_error_diagnose() {
 #ifdef _WIN32
     std::system("pause");
 #endif
+}
+
+void check_gl::opengl_link_program(unsigned int program) {
+    CHECK_GL(glLinkProgram(program));
+    int status = GL_TRUE;
+    CHECK_GL(glGetProgramiv(program, GL_LINK_STATUS, &status));
+    if (status != GL_TRUE) [[unlikely]] {
+        GLsizei logLength;
+        CHECK_GL(glGetProgramiv(program, GL_INFO_LOG_LENGTH, &logLength));
+        std::string log;
+        log.resize(logLength);
+        CHECK_GL(glGetProgramInfoLog(program, logLength, &logLength, log.data()));
+        log.resize(logLength);
+        std::cerr << "OpenGL ERROR linking program:\n" << log << '\n';
+        std::terminate();
+    }
+}
+
+void check_gl::opengl_shader_source(unsigned int shader, std::string const &src) {
+    const char *srcList[1] = {src.c_str()};
+    int srcLenList[1] = {(int)src.size()};
+    CHECK_GL(glShaderSource(shader, 1, srcList, srcLenList));
+    CHECK_GL(glCompileShader(shader));
+    int status = GL_TRUE;
+    CHECK_GL(glGetShaderiv(shader, GL_COMPILE_STATUS, &status));
+    if (status != GL_TRUE) [[unlikely]] {
+        GLsizei logLength;
+        CHECK_GL(glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &logLength));
+        std::string log;
+        log.resize(logLength);
+        CHECK_GL(glGetShaderInfoLog(shader, logLength, &logLength, log.data()));
+        log.resize(logLength);
+        std::map<int, std::string> lines;
+        for (size_t i = 0; i < log.size(); i++) {
+            if (i >= 1 && log[i] == '(' && log[i - 1] == '0' && (i == 1 || log[i - 2] == '\n')) {
+                size_t j = log.find_first_of(")\n", i + 1);
+                if (j != log.npos) [[likely]] {
+                    size_t k = log.find_first_not_of(") :", j);
+                    auto &s = lines[std::atoi(log.substr(i + 1, j - i - 1).c_str())];
+                    size_t l = log.find('\n', k);
+                    s.append(">>>>> ");
+                    s.append(log.substr(k, l == log.npos ? log.npos : l - k));
+                    s.push_back('\n');
+                }
+            }
+        }
+        int line = 2;
+        std::ostringstream oss;
+        auto flg = oss.flags();
+        std::string lastErr;
+        auto it = lines.find(1);
+        if (it != lines.end()) {
+            oss << "\033[33;1m  1 |\033[0m ";
+            lastErr = it->second;
+        } else {
+            oss << "\033[37m  1 |\033[0m ";
+        }
+        for (auto const &c: src) {
+            oss << c;
+            if (c == '\n') {
+                if (!lastErr.empty()) {
+                    oss << "\033[33m" << lastErr << "\033[0m";
+                    lastErr.clear();
+                }
+                auto it = lines.find(line);
+                if (it != lines.end()) {
+                    oss << "\033[33;1m";
+                    lastErr = it->second;
+                } else {
+                    oss << "\033[37m";
+                }
+                oss << std::setw(3) << std::right << line;
+                oss << " |\033[0m ";
+                oss.flags(flg);
+                ++line;
+            }
+        }
+        if (!lastErr.empty()) {
+            oss << "\033[33m" << lastErr << "\033[0m";
+        }
+        std::cerr << "OpenGL ERROR compiling shader:\n" << oss.str() << '\n';
+        if (lines.empty())
+            std::cerr << "Log messages:\n" << log << '\n';
+        std::terminate();
+    }
 }

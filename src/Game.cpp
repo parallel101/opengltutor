@@ -2,6 +2,7 @@
 #include "check_gl.hpp"
 #include <glm/glm.hpp>
 #include <glm/ext.hpp>
+#include "fileutils.hpp"
 #include "OBJ.hpp"
 
 struct Game::Private { // P-IMPL pattern
@@ -42,19 +43,14 @@ void Game::initialize() {
 
     // glm::vec4 lightPos(-1, 1, 1, 0); // 等会用更现代的方式指定光源方向
 
+    std::string src = get_file_content(OPENGLTUTOR_HOME "assets/orange.frag");
+
     unsigned int program = glCreateProgram();
     unsigned int shader = glCreateShader(GL_FRAGMENT_SHADER);
-    const char *src = R"(#version 330 core
-void main() {
-    gl_FragColor = vec4(1, 0.5, 0, 1);
-}
-)";
-    const char *srcList[1] = {src};
-    int srcLenList[1] = {(int)strlen(src)};
-    glShaderSource(shader, 1, srcList, srcLenList);
-    glAttachShader(program, shader);
-    glLinkProgram(program);
-    glUseProgram(program);
+    check_gl::opengl_shader_source(shader, src);
+    CHECK_GL(glAttachShader(program, shader));
+    CHECK_GL(glLinkProgram(program));
+    CHECK_GL(glUseProgram(program));
 }
 
 void Game::render() {

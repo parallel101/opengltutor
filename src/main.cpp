@@ -1,8 +1,36 @@
 #include "check_gl.hpp"
 #include <iostream>
 #include "Game.hpp"
+#ifdef _WIN32
+#include <windows.h>
+#include <cstdlib>
+#include <clocale>
+#endif
 
 int main() {
+#ifdef _WIN32
+    try {
+        // this is to support Unicode in the console
+        static UINT oldCCP = GetConsoleOutputCP();
+        if (!SetConsoleOutputCP(CP_UTF8)) {
+            std::cerr << "warning: failed to chcp 65001 for utf-8 output\n";
+        } else {
+            std::atexit(+[] { SetConsoleOutputCP(oldCCP); });
+        }
+        static UINT oldCP = GetConsoleCP();
+        if (!SetConsoleCP(CP_UTF8)) {
+            std::cerr << "warning: failed to chcp 65001 for utf-8 input\n";
+        } else {
+            std::atexit(+[] { SetConsoleCP(oldCP); });
+        }
+        // this is to support Unicode in path name (make Windows API regard char * as UTF-8 instead of GBK)
+        // https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/setlocale-wsetlocale
+        std::setlocale(LC_ALL, ".UTF-8");
+    } catch (...) {
+        std::cerr << "warning: failed to set utf-8 locale\n";
+    }
+#endif
+
     // Initalize GLFW library
     if (!glfwInit()) {
         const char *errmsg;

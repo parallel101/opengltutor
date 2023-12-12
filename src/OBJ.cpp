@@ -62,24 +62,19 @@ static glm::vec3 compute_normal_biased(glm::vec3 a, glm::vec3 b, glm::vec3 c) {
     return n;
 }
 
-void OBJ::draw_obj(bool isFlat) {
-    CHECK_GL(glShadeModel(isFlat ? GL_FLAT : GL_SMOOTH));
-
-    std::vector<glm::vec3> normals;
-    if (!isFlat) {
-        normals.resize(vertices.size());
-        for (auto const &face: faces) {
-            auto const &a = vertices.at(face[0]);
-            auto const &b = vertices.at(face[1]);
-            auto const &c = vertices.at(face[2]);
-            // 感谢 @gaoxinge 在 #46 中指出问题
-            normals[face[0]] += compute_normal_biased(a, b, c); 
-            normals[face[1]] += compute_normal_biased(b, c, a); 
-            normals[face[2]] += compute_normal_biased(c, a, b);
-        }
-        for (auto &normal: normals) {
-            normal = glm::normalize(normal);
-        }
+void OBJ::draw_obj() {
+    std::vector<glm::vec3> normals(vertices.size());
+    for (auto const &face: faces) {
+        auto const &a = vertices.at(face[0]);
+        auto const &b = vertices.at(face[1]);
+        auto const &c = vertices.at(face[2]);
+        // 感谢 @gaoxinge 在 #46 中指出问题
+        normals[face[0]] += compute_normal_biased(a, b, c); 
+        normals[face[1]] += compute_normal_biased(b, c, a); 
+        normals[face[2]] += compute_normal_biased(c, a, b);
+    }
+    for (auto &normal: normals) {
+        normal = glm::normalize(normal);
     }
 
     glBegin(GL_TRIANGLES);
@@ -87,23 +82,16 @@ void OBJ::draw_obj(bool isFlat) {
         auto const &a = vertices[face[0]];
         auto const &b = vertices[face[1]];
         auto const &c = vertices[face[2]];
-        if (isFlat) {
-            glm::vec3 norm = compute_normal(a, b, c);
-            glNormal3fv(glm::value_ptr(norm));
-            glVertex3fv(glm::value_ptr(a));
-            glVertex3fv(glm::value_ptr(b));
-            glVertex3fv(glm::value_ptr(c));
-        } else {
             auto const &an = normals[face[0]];
             auto const &bn = normals[face[1]];
             auto const &cn = normals[face[2]];
-            glNormal3fv(glm::value_ptr(an));
-            glVertex3fv(glm::value_ptr(a));
-            glNormal3fv(glm::value_ptr(bn));
-            glVertex3fv(glm::value_ptr(b));
-            glNormal3fv(glm::value_ptr(cn));
-            glVertex3fv(glm::value_ptr(c));
-        }
+            glVertexAttrib3fv(0, glm::value_ptr(a));
+            glVertexAttrib3fv(1, glm::value_ptr(an));
+            glVertexAttrib3fv(0, glm::value_ptr(b));
+            glVertexAttrib3fv(1, glm::value_ptr(bn));
+            glVertexAttrib3fv(0, glm::value_ptr(c));
+            glVertexAttrib3fv(1, glm::value_ptr(cn));
+        
     }
     CHECK_GL(glEnd());
 }

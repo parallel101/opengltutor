@@ -26,6 +26,21 @@ int main() {
         // this is to support Unicode in path name (make Windows API regard char * as UTF-8 instead of GBK)
         // https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/setlocale-wsetlocale
         std::setlocale(LC_ALL, ".UTF-8");
+        // this is to support ANSI control characters (e.g. \033[0m)
+        HANDLE hIn = GetStdHandle(STD_INPUT_HANDLE);
+        HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);
+        if (hIn != INVALID_HANDLE_VALUE && hOut != INVALID_HANDLE_VALUE) {
+            static DWORD oldOutMode = 0;
+            static DWORD oldInMode = 0;
+            GetConsoleMode(hOut, &oldOutMode);
+            GetConsoleMode(hIn, &oldInMode);
+            if (SetConsoleMode(hOut, oldOutMode | 0x000C)) {
+                std::atexit(+[] { SetConsoleMode(hOut, oldOutMode); });
+                if (SetConsoleMode(hIn, oldInMode | 0x0200)) {
+                    std::atexit(+[] { SetConsoleMode(hIn, oldInMode); });
+                }
+            }
+        }
     } catch (...) {
         std::cerr << "warning: failed to set utf-8 locale\n";
     }
@@ -33,7 +48,7 @@ int main() {
 
     // Initalize GLFW library
     if (!glfwInit()) {
-        const char *errmsg;
+        const char *errmsg = nullptr;
         glfwGetError(&errmsg);
         if (!errmsg) errmsg = "(no error)";
         std::cerr << "failed to initialize GLFW: " << errmsg << '\n';

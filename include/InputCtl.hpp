@@ -43,6 +43,7 @@ public:
 
     void register_callbacks(GLFWwindow *window);
 
+    glm::vec2 get_cursor_pos();
     glm::mat4x4 get_view_matrix();
     glm::mat4x4 get_projection_matrix();
 };

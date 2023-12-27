@@ -132,6 +132,17 @@ InputCtl::InputCtl() : m_private(std::make_unique<Private>()) {}
 
 InputCtl::~InputCtl() = default;
 
+glm::vec2 InputCtl::get_cursor_pos() {
+    double xpos, ypos;
+    glfwGetCursorPos(m_private->window, &xpos, &ypos);
+    int width, height;
+    glfwGetWindowSize(m_private->window, &width, &height);
+
+    float x = (float)(2 * xpos / width - 1);
+    float y = (float)(2 * (height - ypos) / height - 1);
+    return glm::vec2(x, y);
+}
+
 glm::mat4x4 InputCtl::get_view_matrix() {
     return m_private->camState.view_matrix();
 }
@@ -187,15 +198,7 @@ void InputCtl::cursor_pos_callback(double xpos, double ypos) {
 }
 
 void InputCtl::mouse_button_callback(int button, int action, int mods) {
-    double xpos, ypos;
-    glfwGetCursorPos(m_private->window, &xpos, &ypos);
-    int width, height;
-    glfwGetWindowSize(m_private->window, &width, &height);
-
-    float x = (float)(2 * xpos / width - 1);
-    float y = (float)(2 * (height - ypos) / height - 1);
-    glm::vec2 pos(x, y);
-
+    auto pos = get_cursor_pos();
     m_private->lastpos = pos;
 
     m_private->moving = m_inputPref.orbit_binding.check_is_pressed(m_private->window)

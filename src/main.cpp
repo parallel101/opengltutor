@@ -27,8 +27,8 @@ int main() {
         // https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/setlocale-wsetlocale
         std::setlocale(LC_ALL, ".UTF-8");
         // this is to support ANSI control characters (e.g. \033[0m)
-        HANDLE hIn = GetStdHandle(STD_INPUT_HANDLE);
-        HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);
+        static HANDLE hIn = GetStdHandle(STD_INPUT_HANDLE);
+        static HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);
         if (hIn != INVALID_HANDLE_VALUE && hOut != INVALID_HANDLE_VALUE) {
             static DWORD oldOutMode = 0;
             static DWORD oldInMode = 0;

@@ -73,12 +73,13 @@ void Game::render() {
     auto view = m_inputCtl.get_view_matrix();
     glm::mat4x4 model(1.0f); // 等会用更现代的方式指定这些矩阵
 
-    /* CHECK_GL(glUniformMatrix4fv(glGetUniformLocation(m_private->program, "model"), 1, GL_FALSE, glm::value_ptr(model))); */
-    /* CHECK_GL(glUniformMatrix4fv(glGetUniformLocation(m_private->program, "view"), 1, GL_FALSE, glm::value_ptr(view))); */
-    /* CHECK_GL(glUniformMatrix4fv(glGetUniformLocation(m_private->program, "projection"), 1, GL_FALSE, glm::value_ptr(projection))); */
+    CHECK_GL(glUniformMatrix4fv(glGetUniformLocation(m_private->program, "uniModel"), 1, GL_FALSE, glm::value_ptr(model)));
+    CHECK_GL(glUniformMatrix4fv(glGetUniformLocation(m_private->program, "uniView"), 1, GL_FALSE, glm::value_ptr(view)));
+    CHECK_GL(glUniformMatrix4fv(glGetUniformLocation(m_private->program, "uniProjection"), 1, GL_FALSE, glm::value_ptr(projection)));
 
     glm::vec2 mousePos = m_inputCtl.get_cursor_pos();
     int location = glGetUniformLocation(m_private->program, "uniMouse");
     CHECK_GL(glUniform2f(location, mousePos.x, mousePos.y));
+    CHECK_GL(glUniform2fv(location, 1, &mousePos.x));
     m_private->obj.draw_obj();
 }

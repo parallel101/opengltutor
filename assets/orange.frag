@@ -1,6 +1,8 @@
 #version 330 core
-out vec4 fragColor;
 in vec3 vertPosition;
+out vec4 fragColor;
+uniform vec2 uniMouse;
 void main() {
-    fragColor = vec4(vertPosition * 0.5 + 0.5, 1);
+    float alpha = 1.0 - length(vertPosition.xy - uniMouse);
+    fragColor = vec4(vertPosition * 0.5 + 0.5, alpha);
 }

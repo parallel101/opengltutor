@@ -17,7 +17,7 @@ void OBJ::load_obj(std::string path) {
             std::istringstream s(line.substr(2));
             glm::vec3 vertex;
             s >> vertex.x >> vertex.y >> vertex.z;
-            vertices.push_back(vertex);
+            vertices.push_back({vertex, {}});
 
         } else if (line.substr(0, 2) == "f ") {
             std::istringstream s(line.substr(2));
@@ -37,6 +37,8 @@ void OBJ::load_obj(std::string path) {
 
     file.close();
     std::cout << path << ": Loaded " << vertices.size() << " vertices, " << faces.size() << " faces.\n";
+
+    auto_normal();
 }
 
 /* static glm::vec3 perspective_divide(glm::vec4 pos) { */
@@ -57,41 +59,74 @@ static glm::vec3 compute_normal_biased(glm::vec3 a, glm::vec3 b, glm::vec3 c) {
     glm::vec3 n = glm::cross(ab, ac);
     auto nlen = glm::length(n);
     if (nlen != 0) [[likely]] {
-        n *= glm::asin(nlen / (glm::length(ab) * glm::length(ac))) / nlen;
+        auto labc = glm::length(ab) * glm::length(ac);
+        if (labc >= nlen) [[likely]] {
+            n *= glm::asin(nlen / labc) / nlen;
+        } else {
+            n *= 1.0f / nlen;
+        }
     }
     return n;
 }
 
-void OBJ::draw_obj() {
-    std::vector<glm::vec3> normals(vertices.size());
+void OBJ::auto_normal() {
+    for (auto &v: vertices) {
+        v.normal = glm::vec3();
+    }
     for (auto const &face: faces) {
-        auto const &a = vertices.at(face[0]);
-        auto const &b = vertices.at(face[1]);
-        auto const &c = vertices.at(face[2]);
+        auto &a = vertices[face[0]];
+        auto &b = vertices[face[1]];
+        auto &c = vertices[face[2]];
         // 感谢 @gaoxinge 在 #46 中指出问题
-        normals[face[0]] += compute_normal_biased(a, b, c); 
-        normals[face[1]] += compute_normal_biased(b, c, a); 
-        normals[face[2]] += compute_normal_biased(c, a, b);
+        a.normal += compute_normal_biased(a.position, b.position, c.position);
+        b.normal += compute_normal_biased(b.position, c.position, a.position);
+        c.normal += compute_normal_biased(c.position, a.position, b.position);
     }
-    for (auto &normal: normals) {
-        normal = glm::normalize(normal);
+    for (auto &v: vertices) {
+        v.normal = glm::normalize(v.normal);
     }
+}
 
-    glBegin(GL_TRIANGLES);
-    for (auto const &face: faces) {
-        auto const &a = vertices[face[0]];
-        auto const &b = vertices[face[1]];
-        auto const &c = vertices[face[2]];
-            auto const &an = normals[face[0]];
-            auto const &bn = normals[face[1]];
-            auto const &cn = normals[face[2]];
-            glVertexAttrib3fv(0, glm::value_ptr(a));
-            glVertexAttrib3fv(1, glm::value_ptr(an));
-            glVertexAttrib3fv(0, glm::value_ptr(b));
-            glVertexAttrib3fv(1, glm::value_ptr(bn));
-            glVertexAttrib3fv(0, glm::value_ptr(c));
-            glVertexAttrib3fv(1, glm::value_ptr(cn));
-        
-    }
-    CHECK_GL(glEnd());
+
+void OBJ::draw_obj() {
+    unsigned int vao = 0;
+    unsigned int vbo = 0;
+    unsigned int ebo = 0;
+    CHECK_GL(glGenVertexArrays(1, &vao));
+    CHECK_GL(glBindVertexArray(vao));
+    CHECK_GL(glGenBuffers(1, &vbo));
+    CHECK_GL(glGenBuffers(1, &ebo));
+    CHECK_GL(glBindBuffer(GL_ARRAY_BUFFER, vbo));
+    CHECK_GL(glBufferData(GL_ARRAY_BUFFER, sizeof(Vertex) * vertices.size(), vertices.data(), GL_STATIC_DRAW));
+    CHECK_GL(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo));
+    CHECK_GL(glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(glm::uvec3) * faces.size(), faces.data(), GL_STATIC_DRAW));
+    CHECK_GL(glEnableVertexAttribArray(0));
+    CHECK_GL(glEnableVertexAttribArray(1));
+    CHECK_GL(glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)offsetof(Vertex, position)));
+    CHECK_GL(glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)offsetof(Vertex, normal)));
+    CHECK_GL(glDrawElements(GL_TRIANGLES, faces.size() * 3, GL_UNSIGNED_INT, (void *)0));
+    CHECK_GL(glDisableVertexAttribArray(1));
+    CHECK_GL(glDisableVertexAttribArray(0));
+    CHECK_GL(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0));
+    CHECK_GL(glBindBuffer(GL_ARRAY_BUFFER, 0));
+    CHECK_GL(glDeleteBuffers(1, &vbo));
+    CHECK_GL(glDeleteBuffers(1, &ebo));
+    CHECK_GL(glBindVertexArray(0));
+    CHECK_GL(glDeleteVertexArrays(1, &vao));
+    /* glBegin(GL_TRIANGLES); */
+    /* for (auto const &face: faces) { */
+    /*     auto const &a = vertices[face[0]]; */
+    /*     auto const &b = vertices[face[1]]; */
+    /*     auto const &c = vertices[face[2]]; */
+    /*     auto const &an = normals[face[0]]; */
+    /*     auto const &bn = normals[face[1]]; */
+    /*     auto const &cn = normals[face[2]]; */
+    /*     glVertexAttrib3fv(1, glm::value_ptr(an)); */
+    /*     glVertexAttrib3fv(0, glm::value_ptr(a)); */
+    /*     glVertexAttrib3fv(1, glm::value_ptr(bn)); */
+    /*     glVertexAttrib3fv(0, glm::value_ptr(b)); */
+    /*     glVertexAttrib3fv(1, glm::value_ptr(cn)); */
+    /*     glVertexAttrib3fv(0, glm::value_ptr(c)); */
+    /* } */
+    /* CHECK_GL(glEnd()); */
 }

@@ -10,7 +10,6 @@ struct Game::Private { // P-IMPL pattern
     glm::mat4x4 projMat;
 
     OBJ obj;
-    unsigned int vao;
     unsigned int program;
 };
 
@@ -34,7 +33,7 @@ void Game::set_window(GLFWwindow *window) {
 #endif
 
 void Game::initialize() {
-    m_private->obj.load_obj(OPENGLTUTOR_HOME "assets/sphere.obj");
+    m_private->obj.load_obj(OPENGLTUTOR_HOME "assets/monkey.obj");
     CHECK_GL(glEnable(GL_DEPTH_TEST));
     CHECK_GL(glEnable(GL_MULTISAMPLE));
     CHECK_GL(glEnable(GL_BLEND));
@@ -53,11 +52,10 @@ void Game::initialize() {
     check_gl::opengl_shader_source(fragShader, get_file_content(OPENGLTUTOR_HOME "assets/orange.frag"));
     CHECK_GL(glAttachShader(program, fragShader));
     CHECK_GL(glLinkProgram(program));
-    unsigned int vao;
-    CHECK_GL(glGenVertexArrays(1, &vao));
-    CHECK_GL(glBindVertexArray(vao));
-    CHECK_GL(glUseProgram(program));
-    m_private->vao = vao;
+    /* unsigned int vao; */
+    /* CHECK_GL(glGenVertexArrays(1, &vao)); */
+    /* CHECK_GL(glBindVertexArray(vao)); */
+    /* m_private->vao = vao; */
     m_private->program = program;
 }
 
@@ -73,6 +71,7 @@ void Game::render() {
     auto view = m_inputCtl.get_view_matrix();
     glm::mat4x4 model(1.0f); // 等会用更现代的方式指定这些矩阵
 
+    CHECK_GL(glUseProgram(m_private->program));
     CHECK_GL(glUniformMatrix4fv(glGetUniformLocation(m_private->program, "uniModel"), 1, GL_FALSE, glm::value_ptr(model)));
     CHECK_GL(glUniformMatrix4fv(glGetUniformLocation(m_private->program, "uniView"), 1, GL_FALSE, glm::value_ptr(view)));
     CHECK_GL(glUniformMatrix4fv(glGetUniformLocation(m_private->program, "uniProjection"), 1, GL_FALSE, glm::value_ptr(projection)));
@@ -81,6 +80,6 @@ void Game::render() {
     glm::vec3 lightDir = glm::normalize(glm::vec3(mousePos.x, mousePos.y, 1));
     /* glm::vec3 lightDir = glm::normalize(glm::vec3(1, 1, 0)); */
     int location = glGetUniformLocation(m_private->program, "uniLightDir");
-    CHECK_GL(glUniform3f(location, lightDir.x, lightDir.y, lightDir.z));
+    CHECK_GL(glUniform3fv(location, 1, glm::value_ptr(lightDir)));
     m_private->obj.draw_obj();
 }

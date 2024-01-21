@@ -78,8 +78,9 @@ void Game::render() {
     CHECK_GL(glUniformMatrix4fv(glGetUniformLocation(m_private->program, "uniProjection"), 1, GL_FALSE, glm::value_ptr(projection)));
 
     glm::vec2 mousePos = m_inputCtl.get_cursor_pos();
-    int location = glGetUniformLocation(m_private->program, "uniMouse");
-    CHECK_GL(glUniform2f(location, mousePos.x, mousePos.y));
-    CHECK_GL(glUniform2fv(location, 1, &mousePos.x));
+    glm::vec3 lightDir = glm::normalize(glm::vec3(mousePos.x, mousePos.y, 1));
+    /* glm::vec3 lightDir = glm::normalize(glm::vec3(1, 1, 0)); */
+    int location = glGetUniformLocation(m_private->program, "uniLightDir");
+    CHECK_GL(glUniform3f(location, lightDir.x, lightDir.y, lightDir.z));
     m_private->obj.draw_obj();
 }

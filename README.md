@@ -51,6 +51,7 @@
 - Khronos（OpenGL 的维护团队）主页：http://www.khronos.org/
 - GAMES104（小彭老师所对标的课程）：https://games104.boomingtech.com
 - 《游戏引擎架构》：https://book.douban.com/subject/25815142
+- 小彭老师课程群（不上课的同学不要加）：458712187
 
 ## 硬件要求
 

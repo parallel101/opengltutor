@@ -1,7 +1,7 @@
 #version 330 core
 in vec3 position;
 out vec3 vertPosition;
-uniform vec2 uniMouse;
+uniform vec3 uniLightDir;
 uniform mat4 uniModel;
 uniform mat4 uniView;
 uniform mat4 uniProjection;

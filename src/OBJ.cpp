@@ -45,14 +45,14 @@ void OBJ::load_obj(std::string path) {
 /*     return glm::vec3(pos.x / pos.w, pos.y / pos.w, pos.z / pos.w); */
 /* } */
 
-static glm::vec3 compute_normal(glm::vec3 a, glm::vec3 b, glm::vec3 c) {
+[[maybe_unused]] static glm::vec3 compute_normal(glm::vec3 const &a, glm::vec3 const &b, glm::vec3 const &c) {
     // 计算三角形法线
     glm::vec3 ab = b - a;
     glm::vec3 ac = c - a;
     return glm::normalize(glm::cross(ab, ac));
 }
 
-static glm::vec3 compute_normal_biased(glm::vec3 a, glm::vec3 b, glm::vec3 c) {
+static glm::vec3 compute_normal_biased(glm::vec3 const &a, glm::vec3 const &b, glm::vec3 const &c) {
     // 计算三角形法线，带asin项加权的版本
     glm::vec3 ab = b - a;
     glm::vec3 ac = c - a;
@@ -93,9 +93,9 @@ void OBJ::draw_obj() {
     unsigned int vbo = 0;
     unsigned int ebo = 0;
     CHECK_GL(glGenVertexArrays(1, &vao));
-    CHECK_GL(glBindVertexArray(vao));
     CHECK_GL(glGenBuffers(1, &vbo));
     CHECK_GL(glGenBuffers(1, &ebo));
+    CHECK_GL(glBindVertexArray(vao));
     CHECK_GL(glBindBuffer(GL_ARRAY_BUFFER, vbo));
     CHECK_GL(glBufferData(GL_ARRAY_BUFFER, sizeof(Vertex) * vertices.size(), vertices.data(), GL_STATIC_DRAW));
     CHECK_GL(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo));
@@ -105,28 +105,29 @@ void OBJ::draw_obj() {
     CHECK_GL(glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)offsetof(Vertex, position)));
     CHECK_GL(glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)offsetof(Vertex, normal)));
     CHECK_GL(glDrawElements(GL_TRIANGLES, faces.size() * 3, GL_UNSIGNED_INT, (void *)0));
-    CHECK_GL(glDisableVertexAttribArray(1));
-    CHECK_GL(glDisableVertexAttribArray(0));
     CHECK_GL(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0));
     CHECK_GL(glBindBuffer(GL_ARRAY_BUFFER, 0));
+    CHECK_GL(glBindVertexArray(0));
     CHECK_GL(glDeleteBuffers(1, &vbo));
     CHECK_GL(glDeleteBuffers(1, &ebo));
-    CHECK_GL(glBindVertexArray(0));
     CHECK_GL(glDeleteVertexArrays(1, &vao));
+
+    /* int positionLocation = glGetAttribLocation(program, "position"); */
+    /* int normalLocation = glGetAttribLocation(program, "normal"); */
+    /* printf("position: %d; normal: %d\n", positionLocation, normalLocation); */
+    /* CHECK_GL(glBindAttribLocation(program, 0, "position")); */
+    /* CHECK_GL(glBindAttribLocation(program, 1, "normal")); */
     /* glBegin(GL_TRIANGLES); */
     /* for (auto const &face: faces) { */
     /*     auto const &a = vertices[face[0]]; */
     /*     auto const &b = vertices[face[1]]; */
     /*     auto const &c = vertices[face[2]]; */
-    /*     auto const &an = normals[face[0]]; */
-    /*     auto const &bn = normals[face[1]]; */
-    /*     auto const &cn = normals[face[2]]; */
-    /*     glVertexAttrib3fv(1, glm::value_ptr(an)); */
-    /*     glVertexAttrib3fv(0, glm::value_ptr(a)); */
-    /*     glVertexAttrib3fv(1, glm::value_ptr(bn)); */
-    /*     glVertexAttrib3fv(0, glm::value_ptr(b)); */
-    /*     glVertexAttrib3fv(1, glm::value_ptr(cn)); */
-    /*     glVertexAttrib3fv(0, glm::value_ptr(c)); */
+    /*     glVertexAttrib3fv(1, glm::value_ptr(a.normal)); */
+    /*     glVertexAttrib3fv(0, glm::value_ptr(a.position)); */
+    /*     glVertexAttrib3fv(1, glm::value_ptr(b.normal)); */
+    /*     glVertexAttrib3fv(0, glm::value_ptr(b.position)); */
+    /*     glVertexAttrib3fv(1, glm::value_ptr(c.normal)); */
+    /*     glVertexAttrib3fv(0, glm::value_ptr(c.position)); */
     /* } */
     /* CHECK_GL(glEnd()); */
 }

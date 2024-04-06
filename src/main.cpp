@@ -23,9 +23,6 @@ int main() {
         } else {
             std::atexit(+[] { SetConsoleCP(oldCP); });
         }
-        // this is to support Unicode in path name (make Windows API regard char * as UTF-8 instead of GBK)
-        // https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/setlocale-wsetlocale
-        std::setlocale(LC_ALL, ".UTF-8");
         // this is to support ANSI control characters (e.g. \033[0m)
         static HANDLE hIn = GetStdHandle(STD_INPUT_HANDLE);
         static HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);
@@ -41,6 +38,10 @@ int main() {
                 }
             }
         }
+        // this is to support Unicode in path name (make Windows API regard char * as UTF-8 instead of GBK)
+        // https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/setlocale-wsetlocale
+        // Windows 10 1803 or above required
+        std::setlocale(LC_ALL, ".UTF-8");
     } catch (...) {
         std::cerr << "warning: failed to set utf-8 locale\n";
     }
@@ -61,6 +62,11 @@ int main() {
     glfwWindowHint(GLFW_CONTEXT_CREATION_API, GLFW_NATIVE_CONTEXT_API);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, version / 10);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, version % 10);
+#ifndef NDEBUG
+    glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_TRUE);
+#else
+    glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_FALSE);
+#endif
     if (version >= 33) {
         glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 #ifdef __APPLE__

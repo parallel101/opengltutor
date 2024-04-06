@@ -33,7 +33,8 @@ void check_gl::opengl_check_error(const char *filename, int lineno, const char *
 }
 
 bool check_gl::opengl_has_extension(const char *extension) {
-    static auto exts = [] {
+    // initialized once on first entering opengl_has_extension:
+    static auto extension_set = [] {
         GLint n = 0;
         glGetIntegerv(GL_NUM_EXTENSIONS, &n);
         std::set<std::string> res;
@@ -43,7 +44,7 @@ bool check_gl::opengl_has_extension(const char *extension) {
         }
         return res;
     }();
-    return exts.find(extension) != exts.end();
+    return extension_set.find(extension) != extension_set.end();
 }
 
 static void APIENTRY opengl_debug_message_callback(
@@ -51,7 +52,10 @@ static void APIENTRY opengl_debug_message_callback(
     GLenum severity, GLsizei length,
     const GLchar *msg, const void *data)
 {
-    if (severity == GL_DEBUG_SEVERITY_NOTIFICATION) return;
+    // if (severity == GL_DEBUG_SEVERITY_NOTIFICATION) return;
+
+    // ignore some non-important warning ids:
+    if (id == 131169 || id == 131185 || id == 131218 || id == 131204) return;
 
     const char *_source = "???";
     const char *_type = "???";
@@ -88,7 +92,7 @@ static void APIENTRY opengl_debug_message_callback(
 #undef PER_GL_DEBUG_SEVERITY
     }
 
-    fprintf(stderr, "OpenGL error [%d]: %s of %s severity, raised from %s: %s\n",
+    fprintf(stderr, "OpenGL message [%d]: %s of %s severity, raised from %s: %s\n",
             id, _type, _severity, _source, msg);
     /* #ifndef NDEBUG */
     /* #if defined(_MSC_VER) */
@@ -100,11 +104,15 @@ static void APIENTRY opengl_debug_message_callback(
 }
 
 void check_gl::opengl_try_enable_debug_message() {
-    if (opengl_has_extension("GL_ARB_debug_output")) {
-        auto my_glDebugMessageCallbackARB = (PFNGLDEBUGMESSAGECALLBACKPROC)glfwGetProcAddress("glDebugMessageCallbackARB");
-        if (my_glDebugMessageCallbackARB) {
-            my_glDebugMessageCallbackARB(opengl_debug_message_callback, nullptr);
-            glEnable(GL_DEBUG_OUTPUT);
+    int flags = 0;
+    glGetIntegerv(GL_CONTEXT_FLAGS, &flags);
+    if (flags & GL_CONTEXT_FLAG_DEBUG_BIT) {
+        if (opengl_has_extension("GL_ARB_debug_output")) {
+            auto ptr_glDebugMessageCallbackARB = (PFNGLDEBUGMESSAGECALLBACKPROC)glfwGetProcAddress("glDebugMessageCallbackARB");
+            if (ptr_glDebugMessageCallbackARB) {
+                ptr_glDebugMessageCallbackARB(opengl_debug_message_callback, nullptr);
+                glEnable(GL_DEBUG_OUTPUT);
+            }
         }
     }
 }

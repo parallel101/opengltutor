@@ -8,12 +8,13 @@ uniform mat4 uniView;
 uniform mat4 uniProjection;
 void main() {
     vec3 normal = normalize(vertNormal);
-    vec3 viewPos = vec3(inverse(uniView) * vec4(0, 0, 0, 1));
-    vec3 viewDir = normalize(viewPos - vertPosition);
-    vec3 halfDir = normalize(viewDir + uniLightDir);
-    float highlight = pow(max(0, dot(halfDir, normal)), 40);
+    // vec3 viewPos = vec3(inverse(uniView) * vec4(0, 0, 0, 1));
+    // vec3 viewDir = normalize(viewPos - vertPosition);
+    // vec3 halfDir = normalize(viewDir + uniLightDir);
+    // float highlight = pow(max(0, dot(halfDir, normal)), 40);
     float intensity = max(0, dot(uniLightDir, normal));
-    intensity = intensity * 0.4 + 0.1 + highlight * 0.5;
+    // intensity = intensity * 0.4 + 0.1 + highlight * 0.5;
+    intensity = intensity * 0.8 + 0.2;
     vec3 finalColor = vec3(intensity);
     fragColor = vec4(finalColor, 1);
 }

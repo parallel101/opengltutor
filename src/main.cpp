@@ -6,7 +6,7 @@
 #include <iostream>
 #include <cstring>
 #include <cstdlib>
-
+//mychange
 static void render() {
     glBegin(GL_TRIANGLES);
     glColor3f(1.0f, 0.0f, 0.0f);

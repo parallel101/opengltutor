@@ -1,8 +1,8 @@
 #include "check_gl.hpp"
 #include "OBJ.hpp"
-#include "Game.hpp"
-#include "fileutils.hpp"
 #include <sstream>
+#include <fstream>
+#include <iostream>
 #include <glm/ext.hpp>
 
 void OBJ::load_obj(std::string path) {
@@ -30,14 +30,16 @@ void OBJ::load_obj(std::string path) {
                 indices.push_back(index - 1);
             }
             for (size_t i = 2; i < indices.size(); i++) {
-                glm::uvec3 face = glm::uvec3(indices[0], indices[i - 1], indices[i]);
+                glm::uvec3 face =
+                    glm::uvec3(indices[0], indices[i - 1], indices[i]);
                 faces.push_back(face);
             }
-       }
+        }
     }
 
     file.close();
-    std::cout << path << ": Loaded " << vertices.size() << " vertices, " << faces.size() << " faces.\n";
+    std::cout << path << ": Loaded " << vertices.size() << " vertices, "
+              << faces.size() << " faces.\n";
 
     auto_normal();
 }
@@ -46,14 +48,16 @@ void OBJ::load_obj(std::string path) {
 /*     return glm::vec3(pos.x / pos.w, pos.y / pos.w, pos.z / pos.w); */
 /* } */
 
-[[maybe_unused]] static glm::vec3 compute_normal(glm::vec3 const &a, glm::vec3 const &b, glm::vec3 const &c) {
-    // 计算三角形法线
-    glm::vec3 ab = b - a;
-    glm::vec3 ac = c - a;
-    return glm::normalize(glm::cross(ab, ac));
-}
+/* static glm::vec3 */
+/* compute_normal(glm::vec3 const &a, glm::vec3 const &b, glm::vec3 const &c) { */
+/*     // 计算三角形法线 */
+/*     glm::vec3 ab = b - a; */
+/*     glm::vec3 ac = c - a; */
+/*     return glm::normalize(glm::cross(ab, ac)); */
+/* } */
 
-static glm::vec3 compute_normal_biased(glm::vec3 const &a, glm::vec3 const &b, glm::vec3 const &c) {
+static glm::vec3 compute_normal_biased(glm::vec3 const &a, glm::vec3 const &b,
+                                       glm::vec3 const &c) {
     // 计算三角形法线，带asin项加权的版本
     glm::vec3 ab = b - a;
     glm::vec3 ac = c - a;
@@ -91,34 +95,54 @@ void OBJ::auto_normal() {
 void DrawableOBJ::draw() {
     auto vaoBind = vao.bind();
     auto eboBind = ebo.bind(GL_ELEMENT_ARRAY_BUFFER);
-    CHECK_GL(glDrawElements(GL_TRIANGLES, numElements, GL_UNSIGNED_INT, (void *)0));
+    CHECK_GL(glDrawElements(/*mode=*/GL_TRIANGLES, /*count=*/numElements,
+                            /*type=*/GL_UNSIGNED_INT, /*indices=*/(void *)0));
 }
 
 void OBJ::draw_obj(DrawableOBJ &drawable, bool dynamic) {
+    // 把一个 CPU 内存中的 OBJ 对象，转化为可以直接绘制的，GPU 显存中的 DrawableOBJ 对象
+
     auto vboBind = drawable.vbo.make().bind(GL_ARRAY_BUFFER);
-    CHECK_GL(glBufferData(GL_ARRAY_BUFFER, sizeof(Vertex) * vertices.size(), vertices.data(), dynamic ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW));
+    CHECK_GL(glBufferData(
+        /*target=*/GL_ARRAY_BUFFER, /*size=*/sizeof(Vertex) * vertices.size(),
+        /*data=*/vertices.data(),
+        /*usage=*/dynamic ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW));
+
     auto eboBind = drawable.ebo.make().bind(GL_ELEMENT_ARRAY_BUFFER);
-    CHECK_GL(glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(glm::uvec3) * faces.size(), faces.data(), dynamic ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW));
+    CHECK_GL(glBufferData(
+        /*target=*/GL_ELEMENT_ARRAY_BUFFER,
+        /*size=*/sizeof(glm::uvec3) * faces.size(), /*data=*/faces.data(),
+        /*usage=*/dynamic ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW));
+
     auto vaoBind = drawable.vao.make().bind();
-    CHECK_GL(glEnableVertexAttribArray(0));
-    CHECK_GL(glEnableVertexAttribArray(1));
-    CHECK_GL(glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)offsetof(Vertex, position)));
-    CHECK_GL(glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)offsetof(Vertex, normal)));
+
+    CHECK_GL(glEnableVertexAttribArray(/*index=*/0));
+    CHECK_GL(glVertexAttribPointer(
+        /*index=*/0, /*size=*/3, /*type=*/GL_FLOAT, /*normalized=*/GL_FALSE,
+        /*stride=*/sizeof(Vertex),
+        /*pointer=*/(void *)offsetof(Vertex, position)));
+
+    CHECK_GL(glEnableVertexAttribArray(/*index=*/1));
+    CHECK_GL(glVertexAttribPointer(
+        /*index=*/1, /*size=*/3, /*type=*/GL_FLOAT, /*normalized=*/GL_FALSE,
+        /*stride=*/sizeof(Vertex),
+        /*pointer=*/(void *)offsetof(Vertex, normal)));
+
     drawable.numElements = faces.size() * 3;
 }
 
 /* void OBJ::legacy_draw_obj() { */
-    /* glBegin(GL_TRIANGLES); */
-    /* for (auto const &face: faces) { */
-    /*     auto const &a = vertices[face[0]]; */
-    /*     auto const &b = vertices[face[1]]; */
-    /*     auto const &c = vertices[face[2]]; */
-    /*     glVertexAttrib3fv(1, glm::value_ptr(a.normal)); */
-    /*     glVertexAttrib3fv(0, glm::value_ptr(a.position)); */
-    /*     glVertexAttrib3fv(1, glm::value_ptr(b.normal)); */
-    /*     glVertexAttrib3fv(0, glm::value_ptr(b.position)); */
-    /*     glVertexAttrib3fv(1, glm::value_ptr(c.normal)); */
-    /*     glVertexAttrib3fv(0, glm::value_ptr(c.position)); */
-    /* } */
-    /* CHECK_GL(glEnd()); */
+/* glBegin(GL_TRIANGLES); */
+/* for (auto const &face: faces) { */
+/*     auto const &a = vertices[face[0]]; */
+/*     auto const &b = vertices[face[1]]; */
+/*     auto const &c = vertices[face[2]]; */
+/*     glVertexAttrib3fv(1, glm::value_ptr(a.normal)); */
+/*     glVertexAttrib3fv(0, glm::value_ptr(a.position)); */
+/*     glVertexAttrib3fv(1, glm::value_ptr(b.normal)); */
+/*     glVertexAttrib3fv(0, glm::value_ptr(b.position)); */
+/*     glVertexAttrib3fv(1, glm::value_ptr(c.normal)); */
+/*     glVertexAttrib3fv(0, glm::value_ptr(c.position)); */
+/* } */
+/* CHECK_GL(glEnd()); */
 /* } */

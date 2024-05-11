@@ -11,7 +11,7 @@ struct Game::Private { // P-IMPL pattern
 
     OBJ obj;
     DrawableOBJ drawable;
-    unsigned int program;
+    GLProgram program;
 };
 
 Game::Game() : m_private(std::make_unique<Private>()) {}
@@ -29,7 +29,6 @@ void Game::set_window(GLFWwindow *window) {
 #endif
 
 void Game::initialize() {
-    m_private->obj.load_obj(OPENGLTUTOR_HOME "assets/monkey.obj");
     CHECK_GL(glEnable(GL_DEPTH_TEST));
     CHECK_GL(glEnable(GL_MULTISAMPLE));
     CHECK_GL(glEnable(GL_BLEND));
@@ -40,19 +39,21 @@ void Game::initialize() {
 
     // glm::vec4 lightPos(-1, 1, 1, 0); // 等会用更现代的方式指定光源方向
 
-    unsigned int program = glCreateProgram();
-    unsigned int vertShader = glCreateShader(GL_VERTEX_SHADER);
+    auto program = GLProgram().make();
+
+    auto vertShader = GLShader().make(GL_VERTEX_SHADER);
     check_gl::opengl_shader_source(vertShader, get_file_content(OPENGLTUTOR_HOME "assets/orange.vert"));
     CHECK_GL(glAttachShader(program, vertShader));
-    unsigned int fragShader = glCreateShader(GL_FRAGMENT_SHADER);
+
+    auto fragShader = GLShader().make(GL_FRAGMENT_SHADER);
     check_gl::opengl_shader_source(fragShader, get_file_content(OPENGLTUTOR_HOME "assets/orange.frag"));
     CHECK_GL(glAttachShader(program, fragShader));
+
     CHECK_GL(glLinkProgram(program));
-    /* unsigned int vao; */
-    /* CHECK_GL(glGenVertexArrays(1, &vao)); */
-    /* CHECK_GL(glBindVertexArray(vao)); */
-    /* m_private->vao = vao; */
-    m_private->program = program;
+    m_private->program = std::move(program);
+
+    m_private->obj.load_obj(OPENGLTUTOR_HOME "assets/monkey.obj");
+    m_private->obj.draw_obj(m_private->drawable, /*dynamic=*/false);
 }
 
 void Game::render() {
@@ -85,6 +86,5 @@ void Game::render() {
     glm::vec3 lightDir = glm::normalize(glm::vec3(mousePos.x, mousePos.y, 1));
     int location = glGetUniformLocation(m_private->program, "uniLightDir");
     CHECK_GL(glUniform3fv(location, 1, glm::value_ptr(lightDir)));
-    m_private->drawable = m_private->obj.draw_obj();
     m_private->drawable.draw();
 }

@@ -94,24 +94,20 @@ void DrawableOBJ::draw() {
     CHECK_GL(glDrawElements(GL_TRIANGLES, numElements, GL_UNSIGNED_INT, (void *)0));
 }
 
-DrawableOBJ OBJ::draw_obj() {
-    DrawableOBJ drawable;
-    drawable.vao.make();
-    drawable.vbo.make();
-    drawable.ebo.make();
-    auto vboBind = drawable.vbo.bind(GL_ARRAY_BUFFER);
-    CHECK_GL(glBufferData(GL_ARRAY_BUFFER, sizeof(Vertex) * vertices.size(), vertices.data(), GL_STATIC_DRAW));
-    auto eboBind = drawable.ebo.bind(GL_ELEMENT_ARRAY_BUFFER);
-    CHECK_GL(glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(glm::uvec3) * faces.size(), faces.data(), GL_STATIC_DRAW));
-    auto vaoBind = drawable.vao.bind();
+void OBJ::draw_obj(DrawableOBJ &drawable, bool dynamic) {
+    auto vboBind = drawable.vbo.make().bind(GL_ARRAY_BUFFER);
+    CHECK_GL(glBufferData(GL_ARRAY_BUFFER, sizeof(Vertex) * vertices.size(), vertices.data(), dynamic ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW));
+    auto eboBind = drawable.ebo.make().bind(GL_ELEMENT_ARRAY_BUFFER);
+    CHECK_GL(glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(glm::uvec3) * faces.size(), faces.data(), dynamic ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW));
+    auto vaoBind = drawable.vao.make().bind();
     CHECK_GL(glEnableVertexAttribArray(0));
     CHECK_GL(glEnableVertexAttribArray(1));
     CHECK_GL(glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)offsetof(Vertex, position)));
     CHECK_GL(glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)offsetof(Vertex, normal)));
     drawable.numElements = faces.size() * 3;
-    /* CHECK_GL(glDrawElements(GL_TRIANGLES, drawable.numElements, GL_UNSIGNED_INT, (void *)0)); */
-    return drawable;
+}
 
+/* void OBJ::legacy_draw_obj() { */
     /* glBegin(GL_TRIANGLES); */
     /* for (auto const &face: faces) { */
     /*     auto const &a = vertices[face[0]]; */
@@ -125,6 +121,4 @@ DrawableOBJ OBJ::draw_obj() {
     /*     glVertexAttrib3fv(0, glm::value_ptr(c.position)); */
     /* } */
     /* CHECK_GL(glEnd()); */
-
-    return {};
-}
+/* } */

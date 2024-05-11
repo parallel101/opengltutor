@@ -20,18 +20,16 @@ void opengl_link_program(unsigned int program);
     ::check_gl::opengl_check_error(__FILE__, __LINE__, #x); \
 } while (0)
 
-namespace check_gl {
-
-struct GLHandle {
+struct GLHandleBase {
     unsigned int handle;
 
-    GLHandle() noexcept : handle(0) {
+    GLHandleBase() noexcept : handle(0) {
     }
 
-    explicit GLHandle(std::nullptr_t) noexcept : handle(0) {
+    explicit GLHandleBase(std::nullptr_t) noexcept : handle(0) {
     }
 
-    explicit GLHandle(unsigned int handle) noexcept : handle(handle) {
+    explicit GLHandleBase(unsigned int handle) noexcept : handle(handle) {
     }
 
     operator unsigned int() const noexcept {
@@ -48,26 +46,26 @@ struct GLHandle {
         return ret;
     }
 
-    GLHandle(GLHandle &&that) noexcept : handle(that.handle) {
+    GLHandleBase(GLHandleBase &&that) noexcept : handle(that.handle) {
         that.handle = 0;
     }
 
-    GLHandle &operator=(GLHandle &&that) noexcept {
+    GLHandleBase &operator=(GLHandleBase &&that) noexcept {
         std::swap(handle, that.handle);
         return *this;
     }
 };
 
 template <class Derived>
-struct GLHandleImpl : GLHandle {
-    using GLHandle::GLHandle;
+struct GLHandleImpl : GLHandleBase {
+    using GLHandleBase::GLHandleBase;
 
     GLHandleImpl(GLHandleImpl &&) = default;
     GLHandleImpl &operator=(GLHandleImpl &&) = default;
 
-    struct [[nodiscard]] BindGuard : GLHandle {
+    struct [[nodiscard]] BindGuard : GLHandleBase {
     private:
-        BindGuard(unsigned int handle) noexcept : GLHandle(handle) {
+        BindGuard(unsigned int handle) noexcept : GLHandleBase(handle) {
         }
 
         friend GLHandleImpl;
@@ -82,11 +80,11 @@ struct GLHandleImpl : GLHandle {
         }
     };
 
-    struct [[nodiscard]] BindTargetGuard : GLHandle {
+    struct [[nodiscard]] BindTargetGuard : GLHandleBase {
     private:
         unsigned int target;
 
-        BindTargetGuard(unsigned int target, unsigned int handle) noexcept : GLHandle(handle), target(target) {
+        BindTargetGuard(unsigned int target, unsigned int handle) noexcept : GLHandleBase(handle), target(target) {
         }
 
         friend GLHandleImpl;
@@ -121,12 +119,20 @@ struct GLHandleImpl : GLHandle {
     /* } */
 
     template <class ...Args>
-    Derived &make(Args ...args) {
+    Derived &&remake(Args ...args) {
         if (this->handle) {
             Derived::on_delete(1, &this->handle);
         }
         Derived::on_gen(1, &this->handle, args...);
-        return static_cast<Derived &>(*this);
+        return std::move(static_cast<Derived &>(*this));
+    }
+
+    template <class ...Args>
+    Derived &&make(Args ...args) {
+        if (!this->handle) {
+            Derived::on_gen(1, &this->handle, args...);
+        }
+        return std::move(static_cast<Derived &>(*this));
     }
 
     void reset(unsigned int handle) {
@@ -245,5 +251,3 @@ struct GLTexture : GLHandleImpl<GLRenderbuffer> {
         CHECK_GL(glBindTexture(target, handle));
     }
 };
-
-}

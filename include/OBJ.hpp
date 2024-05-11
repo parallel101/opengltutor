@@ -6,9 +6,9 @@
 #include <string>
 
 struct DrawableOBJ {
-    check_gl::GLVertexArray vao;
-    check_gl::GLBuffer vbo;
-    check_gl::GLBuffer ebo;
+    GLVertexArray vao;
+    GLBuffer vbo;
+    GLBuffer ebo;
     std::size_t numElements;
 
     void draw();
@@ -24,5 +24,5 @@ struct OBJ {
 
     void load_obj(std::string path);
     void auto_normal();
-    [[nodiscard]] DrawableOBJ draw_obj();
+    void draw_obj(DrawableOBJ &drawable, bool dynamic);
 };

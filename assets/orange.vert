@@ -8,7 +8,7 @@ uniform mat4 uniModel;
 uniform mat4 uniView;
 uniform mat4 uniProjection;
 void main() {
-    vertPosition = vec3(uniModel * vec4(position, 1.0));
-    vertNormal = normalize(transpose(inverse(mat3(uniModel))) * normal);
+    vertPosition = vec3(uniView * uniModel * vec4(position, 1.0));
+    vertNormal = normalize(transpose(inverse(mat3(uniView * uniModel))) * normal);
     gl_Position = uniProjection * uniView * uniModel * vec4(position, 1.0);
 }

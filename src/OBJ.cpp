@@ -112,11 +112,6 @@ void OBJ::draw_obj() {
     CHECK_GL(glDeleteBuffers(1, &ebo));
     CHECK_GL(glDeleteVertexArrays(1, &vao));
 
-    /* int positionLocation = glGetAttribLocation(program, "position"); */
-    /* int normalLocation = glGetAttribLocation(program, "normal"); */
-    /* printf("position: %d; normal: %d\n", positionLocation, normalLocation); */
-    /* CHECK_GL(glBindAttribLocation(program, 0, "position")); */
-    /* CHECK_GL(glBindAttribLocation(program, 1, "normal")); */
     /* glBegin(GL_TRIANGLES); */
     /* for (auto const &face: faces) { */
     /*     auto const &a = vertices[face[0]]; */

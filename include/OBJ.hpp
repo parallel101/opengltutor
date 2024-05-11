@@ -1,7 +1,18 @@
+#pragma once
+
+#include "check_gl.hpp"
 #include <glm/glm.hpp>
-#include <glm/ext.hpp>
 #include <vector>
 #include <string>
+
+struct DrawableOBJ {
+    check_gl::GLVertexArray vao;
+    check_gl::GLBuffer vbo;
+    check_gl::GLBuffer ebo;
+    std::size_t numElements;
+
+    void draw();
+};
 
 struct OBJ {
     struct Vertex {
@@ -13,5 +24,5 @@ struct OBJ {
 
     void load_obj(std::string path);
     void auto_normal();
-    void draw_obj();
+    [[nodiscard]] DrawableOBJ draw_obj();
 };

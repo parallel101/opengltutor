@@ -52,6 +52,9 @@ static void APIENTRY opengl_debug_message_callback(
     GLenum severity, GLsizei length,
     const GLchar *msg, const void *data)
 {
+    (void)length;
+    (void)data;
+
     // if (severity == GL_DEBUG_SEVERITY_NOTIFICATION) return;
 
     // ignore some non-important warning ids:

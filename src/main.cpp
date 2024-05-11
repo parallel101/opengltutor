@@ -140,20 +140,21 @@ int main() {
     glfwSwapInterval(1);
 
     // Create game instance
-    auto &game = Game::get();
-    game.set_window(window);
+    auto game = std::make_unique<Game>();
+    game->set_window(window);
 
     // Initialize data structures
-    game.initialize();
+    game->initialize();
     // Start main game loop
     while (!glfwWindowShouldClose(window)) {
         // Render graphics
-        game.render();
+        game->render();
         // Update screen
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
 
+    game.reset();
     glfwTerminate();
     return 0;
 }

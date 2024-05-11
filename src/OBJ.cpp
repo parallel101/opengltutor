@@ -3,6 +3,7 @@
 #include "Game.hpp"
 #include "fileutils.hpp"
 #include <sstream>
+#include <glm/ext.hpp>
 
 void OBJ::load_obj(std::string path) {
     std::ifstream file(path);
@@ -87,30 +88,29 @@ void OBJ::auto_normal() {
     }
 }
 
+void DrawableOBJ::draw() {
+    auto vaoBind = vao.bind();
+    auto eboBind = ebo.bind(GL_ELEMENT_ARRAY_BUFFER);
+    CHECK_GL(glDrawElements(GL_TRIANGLES, numElements, GL_UNSIGNED_INT, (void *)0));
+}
 
-void OBJ::draw_obj() {
-    unsigned int vao = 0;
-    unsigned int vbo = 0;
-    unsigned int ebo = 0;
-    CHECK_GL(glGenVertexArrays(1, &vao));
-    CHECK_GL(glGenBuffers(1, &vbo));
-    CHECK_GL(glGenBuffers(1, &ebo));
-    CHECK_GL(glBindVertexArray(vao));
-    CHECK_GL(glBindBuffer(GL_ARRAY_BUFFER, vbo));
+DrawableOBJ OBJ::draw_obj() {
+    DrawableOBJ drawable;
+    drawable.vao.make();
+    drawable.vbo.make();
+    drawable.ebo.make();
+    auto vboBind = drawable.vbo.bind(GL_ARRAY_BUFFER);
     CHECK_GL(glBufferData(GL_ARRAY_BUFFER, sizeof(Vertex) * vertices.size(), vertices.data(), GL_STATIC_DRAW));
-    CHECK_GL(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo));
+    auto eboBind = drawable.ebo.bind(GL_ELEMENT_ARRAY_BUFFER);
     CHECK_GL(glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(glm::uvec3) * faces.size(), faces.data(), GL_STATIC_DRAW));
+    auto vaoBind = drawable.vao.bind();
     CHECK_GL(glEnableVertexAttribArray(0));
     CHECK_GL(glEnableVertexAttribArray(1));
     CHECK_GL(glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)offsetof(Vertex, position)));
     CHECK_GL(glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)offsetof(Vertex, normal)));
-    CHECK_GL(glDrawElements(GL_TRIANGLES, faces.size() * 3, GL_UNSIGNED_INT, (void *)0));
-    CHECK_GL(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0));
-    CHECK_GL(glBindBuffer(GL_ARRAY_BUFFER, 0));
-    CHECK_GL(glBindVertexArray(0));
-    CHECK_GL(glDeleteBuffers(1, &vbo));
-    CHECK_GL(glDeleteBuffers(1, &ebo));
-    CHECK_GL(glDeleteVertexArrays(1, &vao));
+    drawable.numElements = faces.size() * 3;
+    /* CHECK_GL(glDrawElements(GL_TRIANGLES, drawable.numElements, GL_UNSIGNED_INT, (void *)0)); */
+    return drawable;
 
     /* glBegin(GL_TRIANGLES); */
     /* for (auto const &face: faces) { */
@@ -125,4 +125,6 @@ void OBJ::draw_obj() {
     /*     glVertexAttrib3fv(0, glm::value_ptr(c.position)); */
     /* } */
     /* CHECK_GL(glEnd()); */
+
+    return {};
 }

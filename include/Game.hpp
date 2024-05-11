@@ -16,7 +16,6 @@ struct Game {
 
     Game(Game &&) = delete;
 
-    static Game &get();
     void set_window(GLFWwindow *window);
     void initialize();
     void render();

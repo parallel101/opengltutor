@@ -3,6 +3,7 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <string>
+#include <tuple>
 
 namespace check_gl {
 const char *opengl_errno_name(GLenum err);
@@ -18,3 +19,231 @@ void opengl_link_program(unsigned int program);
     (x); \
     ::check_gl::opengl_check_error(__FILE__, __LINE__, #x); \
 } while (0)
+
+namespace check_gl {
+
+struct GLHandle {
+    unsigned int handle;
+
+    GLHandle() noexcept : handle(0) {
+    }
+
+    explicit GLHandle(std::nullptr_t) noexcept : handle(0) {
+    }
+
+    explicit GLHandle(unsigned int handle) noexcept : handle(handle) {
+    }
+
+    operator unsigned int() const noexcept {
+        return handle;
+    }
+
+    unsigned int get() const noexcept {
+        return handle;
+    }
+
+    unsigned int release() noexcept {
+        unsigned int ret = handle;
+        handle = 0;
+        return ret;
+    }
+
+    GLHandle(GLHandle &&that) noexcept : handle(that.handle) {
+        that.handle = 0;
+    }
+
+    GLHandle &operator=(GLHandle &&that) noexcept {
+        std::swap(handle, that.handle);
+        return *this;
+    }
+};
+
+template <class Derived>
+struct GLHandleImpl : GLHandle {
+    using GLHandle::GLHandle;
+
+    GLHandleImpl(GLHandleImpl &&) = default;
+    GLHandleImpl &operator=(GLHandleImpl &&) = default;
+
+    struct [[nodiscard]] BindGuard : GLHandle {
+    private:
+        BindGuard(unsigned int handle) noexcept : GLHandle(handle) {
+        }
+
+        friend GLHandleImpl;
+
+    public:
+        BindGuard() = default;
+        BindGuard(BindGuard &&) = default;
+        BindGuard &operator=(BindGuard &&) = default;
+
+        ~BindGuard() noexcept(false) {
+            Derived::on_bind(0);
+        }
+    };
+
+    struct [[nodiscard]] BindTargetGuard : GLHandle {
+    private:
+        unsigned int target;
+
+        BindTargetGuard(unsigned int target, unsigned int handle) noexcept : GLHandle(handle), target(target) {
+        }
+
+        friend GLHandleImpl;
+
+    public:
+        BindTargetGuard() = default;
+        BindTargetGuard(BindTargetGuard &&) = default;
+        BindTargetGuard &operator=(BindTargetGuard &&) = default;
+
+        ~BindTargetGuard() noexcept(false) {
+            Derived::on_bind(target, 0);
+        }
+    };
+
+    BindGuard bind() {
+        static_assert(std::is_base_of_v<GLHandleImpl, Derived>);
+        Derived::on_bind(this->handle);
+        return BindGuard(this->handle);
+    }
+
+    BindTargetGuard bind(unsigned int target) {
+        static_assert(std::is_base_of_v<GLHandleImpl, Derived>);
+        Derived::on_bind(target, this->handle);
+        return BindTargetGuard(target, this->handle);
+    }
+
+    /* template <class ...Args> */
+    /* static Derived make(Args ...args) { */
+    /*     unsigned int handle; */
+    /*     Derived::on_gen(1, &handle, args...); */
+    /*     return Derived(handle); */
+    /* } */
+
+    template <class ...Args>
+    Derived &make(Args ...args) {
+        if (this->handle) {
+            Derived::on_delete(1, &this->handle);
+        }
+        Derived::on_gen(1, &this->handle, args...);
+        return static_cast<Derived &>(*this);
+    }
+
+    void reset(unsigned int handle) {
+        if (this->handle) {
+            Derived::on_delete(1, &this->handle);
+        }
+        this->handle = handle;
+    }
+
+    ~GLHandleImpl() {
+        static_assert(std::is_base_of_v<GLHandleImpl, Derived>);
+        if (this->handle) {
+            Derived::on_delete(1, &this->handle);
+        }
+    }
+};
+
+struct GLProgram : GLHandleImpl<GLProgram> {
+    static void on_gen(size_t count, unsigned int *handles) {
+        for (size_t i = 0; i < count; ++i) {
+            CHECK_GL(handles[i] = glCreateProgram());
+        }
+    }
+
+    static void on_delete(size_t count, const unsigned int *handles) {
+        for (size_t i = 0; i < count; ++i) {
+            CHECK_GL(glDeleteProgram(handles[i]));
+        }
+    }
+
+    static void on_bind(unsigned int handle) {
+        CHECK_GL(glUseProgram(handle));
+    }
+};
+
+struct GLShader : GLHandleImpl<GLShader> {
+    static void on_gen(size_t count, unsigned int *handles, unsigned int type) {
+        for (size_t i = 0; i < count; ++i) {
+            CHECK_GL(handles[i] = glCreateShader(type));
+        }
+    }
+
+    static void on_delete(size_t count, const unsigned int *handles) {
+        for (size_t i = 0; i < count; ++i) {
+            CHECK_GL(glDeleteShader(handles[i]));
+        }
+    }
+};
+
+struct GLBuffer : GLHandleImpl<GLBuffer> {
+    static void on_gen(size_t count, unsigned int *handles) {
+        CHECK_GL(glGenBuffers(count, handles));
+    }
+
+    static void on_delete(size_t count, const unsigned int *handles) {
+        CHECK_GL(glDeleteBuffers(count, handles));
+    }
+
+    static void on_bind(unsigned int target, unsigned int handle) {
+        CHECK_GL(glBindBuffer(target, handle));
+    }
+};
+
+struct GLVertexArray : GLHandleImpl<GLVertexArray> {
+    static void on_gen(size_t count, unsigned int *handles) {
+        CHECK_GL(glGenVertexArrays(count, handles));
+    }
+
+    static void on_delete(size_t count, const unsigned int *handles) {
+        CHECK_GL(glDeleteVertexArrays(count, handles));
+    }
+
+    static void on_bind(unsigned int handle) {
+        CHECK_GL(glBindVertexArray(handle));
+    }
+};
+
+struct GLFramebuffer : GLHandleImpl<GLFramebuffer> {
+    static void on_gen(size_t count, unsigned int *handles) {
+        CHECK_GL(glGenFramebuffers(count, handles));
+    }
+
+    static void on_delete(size_t count, const unsigned int *handles) {
+        CHECK_GL(glDeleteFramebuffers(count, handles));
+    }
+
+    static void on_bind(unsigned int target, unsigned int handle) {
+        CHECK_GL(glBindFramebuffer(target, handle));
+    }
+};
+
+struct GLRenderbuffer : GLHandleImpl<GLRenderbuffer> {
+    static void on_gen(size_t count, unsigned int *handles) {
+        CHECK_GL(glGenRenderbuffers(count, handles));
+    }
+
+    static void on_delete(size_t count, const unsigned int *handles) {
+        CHECK_GL(glDeleteRenderbuffers(count, handles));
+    }
+
+    static void on_bind(unsigned int target, unsigned int handle) {
+        CHECK_GL(glBindRenderbuffer(target, handle));
+    }
+};
+
+struct GLTexture : GLHandleImpl<GLRenderbuffer> {
+    static void on_gen(size_t count, unsigned int *handles) {
+        CHECK_GL(glGenTextures(count, handles));
+    }
+
+    static void on_delete(size_t count, const unsigned int *handles) {
+        CHECK_GL(glDeleteTextures(count, handles));
+    }
+
+    static void on_bind(unsigned int target, unsigned int handle) {
+        CHECK_GL(glBindTexture(target, handle));
+    }
+};
+
+}

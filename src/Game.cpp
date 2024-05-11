@@ -10,17 +10,13 @@ struct Game::Private { // P-IMPL pattern
     glm::mat4x4 projMat;
 
     OBJ obj;
+    DrawableOBJ drawable;
     unsigned int program;
 };
 
 Game::Game() : m_private(std::make_unique<Private>()) {}
 
 Game::~Game() = default;
-
-Game &Game::get() {
-    static Game game; // singleton
-    return game;
-}
 
 void Game::set_window(GLFWwindow *window) {
     m_window = window;
@@ -89,5 +85,6 @@ void Game::render() {
     glm::vec3 lightDir = glm::normalize(glm::vec3(mousePos.x, mousePos.y, 1));
     int location = glGetUniformLocation(m_private->program, "uniLightDir");
     CHECK_GL(glUniform3fv(location, 1, glm::value_ptr(lightDir)));
-    m_private->obj.draw_obj();
+    m_private->drawable = m_private->obj.draw_obj();
+    m_private->drawable.draw();
 }

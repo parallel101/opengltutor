@@ -198,6 +198,10 @@ void InputCtl::cursor_pos_callback(double xpos, double ypos) {
 }
 
 void InputCtl::mouse_button_callback(int button, int action, int mods) {
+    (void)button;
+    (void)action;
+    (void)mods;
+
     auto pos = get_cursor_pos();
     m_private->lastpos = pos;
 
@@ -230,6 +234,10 @@ void InputCtl::scroll_callback(double xoffset, double yoffset) {
 }
 
 void InputCtl::key_callback(int key, int scancode, int action, int mods) {
+    (void)key;
+    (void)scancode;
+    (void)action;
+    (void)mods;
 }
 
 void InputCtl::framebuffer_size_callback(int width, int height) {

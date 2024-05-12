@@ -56,7 +56,7 @@ struct GLHandleBase {
     }
 };
 
-template <class Derived>
+template <class Derived> // CRTP 模式
 struct GLHandleImpl : GLHandleBase {
     using GLHandleBase::GLHandleBase;
 

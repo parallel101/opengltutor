@@ -5,12 +5,12 @@
 #include "fileutils.hpp"
 #include "OBJ.hpp"
 
-struct Game::Private { // P-IMPL pattern
+struct Game::Private { // P-IMPL 模式
     glm::mat4x4 viewMat;
     glm::mat4x4 projMat;
 
     OBJ obj;
-    DrawableOBJ drawable;
+    DrawableOBJ drawableObj;
     GLProgram program;
 };
 
@@ -53,7 +53,7 @@ void Game::initialize() {
     m_private->program = std::move(program);
 
     m_private->obj.load_obj(OPENGLTUTOR_HOME "assets/monkey.obj");
-    m_private->obj.draw_obj(m_private->drawable, /*dynamic=*/false);
+    m_private->obj.draw_obj(m_private->drawableObj, /*dynamic=*/false);
 }
 
 void Game::render() {
@@ -63,15 +63,6 @@ void Game::render() {
 
     CHECK_GL(glClearColor(0.0f, 0.0f, 0.0f, 0.0f));
     CHECK_GL(glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT));
-
-    /* glBegin(GL_LINES); */
-    /* glColor3f(1.0f, 1.0f, 1.0f); // 白色 */
-    /* glVertex2f(-0.5f, 0.0f); // 左侧顶点 */
-    /* glColor3f(0.0f, 0.0f, 0.0f); // 黑色 */
-    /* glVertex2f(0.5f, 0.0f); // 右侧顶点 */
-    /* CHECK_GL(glEnd()); */
-    /*  */
-    /* return; */
 
     auto projection = m_inputCtl.get_projection_matrix();
     auto view = m_inputCtl.get_view_matrix();
@@ -86,5 +77,5 @@ void Game::render() {
     glm::vec3 lightDir = glm::normalize(glm::vec3(mousePos.x, mousePos.y, 1));
     int location = glGetUniformLocation(m_private->program, "uniLightDir");
     CHECK_GL(glUniform3fv(location, 1, glm::value_ptr(lightDir)));
-    m_private->drawable.draw();
+    m_private->drawableObj.draw();
 }

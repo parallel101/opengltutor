@@ -15,6 +15,7 @@ void opengl_shader_source(unsigned int shader, std::string const &src);
 void opengl_link_program(unsigned int program);
 }
 
+//In C++ (and C), __FILE__ is a preprocessor macro
 #define CHECK_GL(x) do { \
     (x); \
     ::check_gl::opengl_check_error(__FILE__, __LINE__, #x); \

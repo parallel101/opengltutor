@@ -7,36 +7,71 @@
 #include <cstring>
 #include <cstdlib>
 
-static void render() {
-    glBegin(GL_TRIANGLES);
-    glColor3f(1.0f, 0.0f, 0.0f);
-    glVertex3f(0.0f, 0.5f, 0.0f);
-    glColor3f(0.0f, 1.0f, 0.0f);
-    glVertex3f(-0.5f, -0.5f, 0.0f);
-    glColor3f(0.0f, 0.0f, 1.0f);
-    glVertex3f(0.5f, -0.5f, 0.0f);
+constexpr float g3 = 1.7320508075688f; // 根号3
+constexpr float pi = 3.1415926535897f;
+
+void setColor(int j)
+{
+    if (j == 0)
+        glColor3f(1.0f, 0.0f, 0.0f);
+    else if (j == 1)
+        glColor3f(0.0f, 1.0f, 0.0f);
+    else if (j == 2)
+        glColor3f(0.0f, 0.0f, 1.0f);
+}
+
+bool missingAngle(int j, float angle){
+    if (j == 0)
+        if (angle > (pi * 5 / 6) && angle < (pi * 7 / 6))
+            return true;
+        else
+            return false;
+    else if (j == 1)
+        if (angle > (pi / 6) && angle < (pi / 2))
+            return true;
+        else
+            return false;
+    else if (j == 2)
+        if (angle > (pi / 6 * 11) || angle < (pi / 6))
+            return true;
+        else return false;
+    return false;
+}
+
+static void render()
+{
+    glBegin(GL_TRIANGLES); // 开始画图, 画图模式，这里是点模式还有线模式
+
+    constexpr int n = 200;
+
+    float radius = g3 / 4 - 0.05;
+    float inner_radius = radius * 2 / 5;
+    float offset[3][3] = {
+        {0.0f, 0.5f, 0.0f},
+        {-(g3 / 4), -0.25f, 0.0f},
+        {g3 / 4, -0.25f, 0.0f},
+    };
+    for (int j = 0; j < 3; j++)
+    {
+        for (int i = 0; i < n; i++)
+        {
+            float angle = i / (float)n * pi * 2;
+            float angle_next = (i + 1) / (float)n * pi * 2;
+            if (missingAngle(j, angle))
+                continue;
+            setColor(j);
+
+            glVertex3f(offset[j][0] + radius * sinf(angle), offset[j][1] + radius * cosf(angle), 0.0f);
+            glVertex3f(offset[j][0] + inner_radius * sinf(angle), offset[j][1] + inner_radius * cosf(angle), 0.0f);
+            glVertex3f(offset[j][0] + inner_radius * sinf(angle_next), offset[j][1] + inner_radius * cosf(angle_next), 0.0f);
+
+            glVertex3f(offset[j][0] + radius * sinf(angle), offset[j][1] + radius * cosf(angle), 0.0f);
+            glVertex3f(offset[j][0] + inner_radius * sinf(angle_next), offset[j][1] + inner_radius * cosf(angle_next), 0.0f);
+            glVertex3f(offset[j][0] + radius * sinf(angle_next), offset[j][1] + radius * cosf(angle_next), 0.0f);
+        }
+    }
+
     CHECK_GL(glEnd());
-    /* glBegin(GL_TRIANGLES); */
-    /* constexpr int n = 100; */
-    /* constexpr float pi = 3.1415926535897f; */
-    /* float radius = 0.5f; */
-    /* float inner_radius = 0.25f; */
-    /* static int x = 0; */
-    /* x++; */
-    /* if (x > n) */
-    /*     x -= n; */
-    /* for (int i = 0; i < x; i++) { */
-    /*     float angle = i / (float)n * pi * 2; */
-    /*     float angle_next = (i + 1) / (float)n * pi * 2; */
-    /*     glVertex3f(0.0f, 0.0f, 0.0f); */
-    /*     glVertex3f(radius * sinf(angle), radius * cosf(angle), 0.0f); */
-    /*     glVertex3f(radius * sinf(angle_next), radius * cosf(angle_next), 0.0f); */
-        /* glVertex3f(inner_radius * sinf(angle), inner_radius * cosf(angle), 0.0f); */
-        /* glVertex3f(inner_radius * sinf(angle_next), inner_radius * cosf(angle_next), 0.0f); */
-        /* glVertex3f(inner_radius * sinf(angle), inner_radius * cosf(angle), 0.0f); */
-        /* glVertex3f(radius * sinf(angle_next), radius * cosf(angle_next), 0.0f); */
-    /* } */
-    /* CHECK_GL(glEnd()); */
 }
 
 int main() {

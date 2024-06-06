@@ -1,10 +1,8 @@
-#include <glm/glm.hpp>
-#include <glm/ext.hpp>
-#include "check_gl.hpp" // includes glad/glad.h
-#include <GLFW/glfw3.h> // must be placed behind glad/glad.h
-#include <stdexcept>
+#include "check_gl.hpp"
 #include <iostream>
-#include <cstring>
+#include "Game.hpp"
+#ifdef _WIN32
+#include <windows.h>
 #include <cstdlib>
 
 constexpr float g3 = 1.7320508075688f; // 根号3
@@ -73,6 +71,7 @@ static void render()
 
     CHECK_GL(glEnd());
 }
+
 
 int main() {
     if (!glfwInit()) {

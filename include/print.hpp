@@ -9,6 +9,8 @@
 #include <optional>
 #include <variant>
 
+/* namespace conutils { */
+
 namespace _print_details {
     template <class T, class = void>
     struct _printer {
@@ -49,6 +51,42 @@ namespace _print_details {
 
     template <class T, class U>
     struct _enable_if_tuple<T, U, std::void_t<decltype(std::tuple_size<T>::value)>> {
+        using type = U;
+    };
+
+    template <class T, class U = void, class = void>
+    struct _enable_if_glmvec {
+        using not_type = U;
+    };
+
+    template <class T, class U>
+    struct _enable_if_glmvec<T, U, std::enable_if_t<
+            std::is_same_v<decltype(T()[0] * T()), T> &&
+            std::is_same_v<decltype(T() * T()[0]), T> &&
+            std::is_same_v<decltype(T().x + T()), T> &&
+            std::is_same_v<decltype(T().x), typename T::value_type> &&
+            std::is_same_v<decltype(T()[0]), typename T::value_type &> &&
+            std::is_same_v<decltype(T() == T()), bool> &&
+            std::is_same_v<decltype(T(T()[0])), T> &&
+            std::is_same_v<decltype(T().length()), typename T::length_type> &&
+            std::is_same_v<decltype(std::declval<typename T::bool_type>().x), bool>
+    >> {
+        using type = U;
+    };
+
+    template <class T, class U = void, class = void>
+    struct _enable_if_glmmat {
+        using not_type = U;
+    };
+
+    template <class T, class U>
+    struct _enable_if_glmmat<T, U, typename _enable_if_glmvec<typename T::col_type,
+            typename _enable_if_glmvec<typename T::row_type, std::enable_if_t<
+            std::is_same_v<decltype(T()[0] * T()), typename T::row_type> &&
+            std::is_same_v<decltype(T() * T()[0]), typename T::col_type> &&
+            std::is_same_v<decltype(T()[0][0] * T()), T> &&
+            std::is_same_v<decltype(T()[0][0]), typename T::value_type &>
+    >>::type>::type> {
         using type = U;
     };
 
@@ -185,6 +223,40 @@ namespace _print_details {
 
         static void print(std::ostream &os, T const &t) {
             _unrolled_print(os, t, std::make_index_sequence<std::max(static_cast<std::size_t>(1), std::tuple_size_v<T>) - 1>{});
+        }
+    };
+
+    template <class T>
+    struct _printer<T, typename _enable_if_has_print<T, typename _enable_if_glmvec<T>::type>::not_type> {
+        static void print(std::ostream &os, T const &t) {
+            os << "{";
+            bool once = false;
+            for (typename T::length_type i = 0; i < t.length(); i++) {
+                if (once) {
+                    os << ", ";
+                } else {
+                    once = true;
+                }
+                _printer<_rmcvref_t<typename T::value_type>>::print(os, t[i]);
+            }
+            os << "}";
+        }
+    };
+
+    template <class T>
+    struct _printer<T, typename _enable_if_has_print<T, typename _enable_if_glmmat<T>::type>::not_type> {
+        static void print(std::ostream &os, T const &t) {
+            os << "{";
+            bool once = false;
+            for (typename T::length_type i = 0; i < t.length(); i++) {
+                if (once) {
+                    os << ",\n ";
+                } else {
+                    once = true;
+                }
+                _printer<_rmcvref_t<typename T::col_type>>::print(os, t[i]);
+            }
+            os << "}";
         }
     };
 
@@ -370,3 +442,5 @@ using _print_details::is_printable;
 //
 // map<string, optional<int>> m = {{"hello", 42}, {"world", nullopt}};
 // print(m);  // {"hello": 42, "world": nullopt}
+
+/* } */

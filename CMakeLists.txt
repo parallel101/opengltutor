@@ -53,3 +53,8 @@ add_subdirectory(glad)
 target_link_libraries(${PROJECT_NAME} PUBLIC glad)
 
 target_compile_definitions(${PROJECT_NAME} PUBLIC -DOPENGLTUTOR_HOME=\"${CMAKE_CURRENT_SOURCE_DIR}/\")
+
+find_package(OpenMP)
+if (TARGET OpenMP::OpenMP_CXX)
+    target_link_libraries(${PROJECT_NAME} PUBLIC OpenMP::OpenMP_CXX)
+endif()

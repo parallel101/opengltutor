@@ -52,8 +52,7 @@ void Game::initialize() {
     CHECK_GL(glLinkProgram(program));
     m_private->program = std::move(program);
 
-    m_private->points.init_cube(glm::vec3(-1, -1, -1), glm::vec3(1, 1, 1), glm::uvec3(32, 32, 1), 1.0f / 32);
-    m_private->points.draw_points(m_private->drawablePoints, /*dynamic=*/false);
+    m_private->points.init_cube(glm::vec3(-1, -1, -0.25f), glm::vec3(1, 1, 0.25f), glm::uvec3(32, 32, 8), 1.0f / 40);
 }
 
 void Game::render() {
@@ -77,5 +76,10 @@ void Game::render() {
     glm::vec2 mousePos = m_inputCtl.get_cursor_pos();
     glm::vec3 lightDir = glm::normalize(glm::vec3(mousePos.x, mousePos.y, 1));
     CHECK_GL(glUniform3fv(glGetUniformLocation(m_private->program, "uniLightDir"), 1, glm::value_ptr(lightDir)));
+
+    for (size_t substep = 0; substep < 1; ++substep) {
+        m_private->points.evolve(0.0001f);
+    }
+    m_private->points.draw_points(m_private->drawablePoints, /*dynamic=*/true);
     m_private->drawablePoints.draw();
 }

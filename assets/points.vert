@@ -1,8 +1,11 @@
 #version 330 core
 layout (location = 0) in vec3 position;
 layout (location = 1) in vec3 velocity;
-layout (location = 2) in vec3 color;
-layout (location = 3) in float radius;
+layout (location = 2) in vec3 acceleration;
+layout (location = 3) in float mass;
+layout (location = 4) in float charge;
+layout (location = 5) in float radius;
+layout (location = 6) in vec3 color;
 out vec3 vertPosition;
 out vec3 vertColor;
 uniform vec3 uniLightDir;

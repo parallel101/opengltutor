@@ -1,9 +1,15 @@
 #pragma once
 
-#include "check_gl.hpp"
 #include <memory>
 #include <glm/glm.hpp>
 #include "KeyBinding.hpp"
+
+struct CameraParams {
+    glm::mat4x4 view;
+    glm::mat4x4 projection;
+    int height;
+    float fov_factor;
+};
 
 struct InputCtl {
     struct Private;
@@ -44,6 +50,6 @@ public:
     void register_callbacks(GLFWwindow *window);
 
     glm::vec2 get_cursor_pos();
-    glm::mat4x4 get_view_matrix();
-    glm::mat4x4 get_projection_matrix();
+
+    CameraParams get_camera_params();
 };

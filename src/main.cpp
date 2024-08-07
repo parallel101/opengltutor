@@ -74,8 +74,8 @@ int main() {
 #endif
     }
 
-    // enable 4x MSAA
-    glfwWindowHint(GLFW_SAMPLES, 4);
+    // enable 8x MSAA
+    glfwWindowHint(GLFW_SAMPLES, 8);
 
     // Enable transparent framebuffer
     constexpr bool transparent = false;

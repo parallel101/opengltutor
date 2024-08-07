@@ -32,6 +32,8 @@ struct CameraState {
     float focal_len = 40.0f;
     float film_height = 24.0f;
     float film_width = 32.0f;
+    float near = 0.05f;
+    float far = 2000.0f;
     int width = 1920;
     int height = 1080;
 
@@ -100,21 +102,20 @@ struct CameraState {
         eye = (eye - lookat) * inv_zoom_factor + lookat;
         if (isHitchcock) {
             focal_len *= inv_zoom_factor;
-            /* printf("focalLen: %.1f mm, FoVx: %.1f deg, FoVy: %.1f deg, Distance: %.1f m\n", focal_len, */
-            /*        glm::degrees(2 * glm::atan(film_width / (2 * focal_len))), */
-            /*        glm::degrees(2 * glm::atan(film_height / (2 * focal_len))), */
-            /*        glm::length(eye - lookat)); */
+            // printf("focalLen: %.1f mm, FoVx: %.1f deg, FoVy: %.1f deg, Distance: %.1f m\n", focal_len,
+            //        glm::degrees(2 * glm::atan(film_width / (2 * focal_len))),
+            //        glm::degrees(2 * glm::atan(film_height / (2 * focal_len))),
+            //        glm::length(eye - lookat));
         }
     }
 
-    glm::mat4x4 view_matrix() const {
-        return glm::lookAt(eye, lookat, up_vector);
-    }
-
-    glm::mat4x4 projection_matrix() {
-        auto fov = 2 * std::atan(film_height / (2 * focal_len));
+    CameraParams get_camera_params() const {
+        auto fov_factor = film_height / (2 * focal_len);
+        auto fov = 2 * std::atan(fov_factor);
         auto aspect = (float)width / height;
-        return glm::perspective(fov, aspect, 0.01f, 100.0f);
+        auto view = glm::lookAt(eye, lookat, up_vector);
+        auto projection = glm::perspective(fov, aspect, near, far);
+        return {view, projection, height, fov_factor};
     }
 };
 
@@ -143,12 +144,8 @@ glm::vec2 InputCtl::get_cursor_pos() {
     return glm::vec2(x, y);
 }
 
-glm::mat4x4 InputCtl::get_view_matrix() {
-    return m_private->camState.view_matrix();
-}
-
-glm::mat4x4 InputCtl::get_projection_matrix() {
-    return m_private->camState.projection_matrix();
+CameraParams InputCtl::get_camera_params() {
+    return m_private->camState.get_camera_params();
 }
 
 void InputCtl::register_callbacks(GLFWwindow *window) {

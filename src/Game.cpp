@@ -78,7 +78,7 @@ void Game::render() {
     CHECK_GL(glUniform3fv(glGetUniformLocation(m_private->program, "uniLightDir"), 1, glm::value_ptr(lightDir)));
 
     for (size_t substep = 0; substep < 1; ++substep) {
-        m_private->points.evolve(0.0001f);
+        m_private->points.evolve(0.0002f);
     }
     m_private->points.draw_points(m_private->drawablePoints, /*dynamic=*/true);
     m_private->drawablePoints.draw();

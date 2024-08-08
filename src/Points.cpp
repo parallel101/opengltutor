@@ -19,8 +19,9 @@ void Points::evolve(float dt) {
     if (average_distance == 0.0f) return;
 
     float const half_dt = dt * 0.5f;
+    float const half_dt_2 = half_dt * dt;
     float const max_interaction_ratio = 5.0f;
-    float const min_interaction_ratio = 0.3f;
+    float const min_interaction_ratio = 0.4f;
     float const max_interaction_ratio2 = max_interaction_ratio * max_interaction_ratio;
     float const min_interaction_ratio2 = min_interaction_ratio * min_interaction_ratio;
     float const inv_average_distance_2 = 1.0f / (average_distance * average_distance);
@@ -32,14 +33,6 @@ void Points::evolve(float dt) {
     for (size_t i = 0; i < vertices.size(); ++i) {
         auto &atom = vertices[i];
         atom.velocity += atom.acceleration * half_dt;
-        for (size_t axis = 0; axis < 3; ++axis) {
-            if (atom.position[axis] > bound_max[axis] || atom.position[axis] < bound_min[axis]) {
-                atom.velocity[axis] = -atom.velocity[axis];
-            }
-        }
-        atom.position += atom.velocity * dt;
-        atom.position = glm::clamp(atom.position, bound_min, bound_max);
-        atom.velocity *= 0.999f;
     }
 
     for (size_t grid_id = 0; grid_id < grids.size(); ++grid_id) {
@@ -101,6 +94,14 @@ void Points::evolve(float dt) {
     for (size_t i = 0; i < vertices.size(); ++i) {
         auto &atom = vertices[i];
         atom.velocity += atom.acceleration * half_dt;
+        for (size_t axis = 0; axis < 3; ++axis) {
+            if (atom.position[axis] > bound_max[axis] || atom.position[axis] < bound_min[axis]) {
+                atom.velocity[axis] = -atom.velocity[axis];
+            }
+        }
+        atom.position += atom.velocity * dt + atom.acceleration * half_dt_2;
+        atom.position = glm::clamp(atom.position, bound_min, bound_max);
+        atom.velocity *= 0.999f;
     }
 }
 
